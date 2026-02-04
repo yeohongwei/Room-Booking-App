@@ -1,7 +1,10 @@
 import dotenv from "dotenv";
 dotenv.config();
+import rooms from "./routers/rooms.js";
+import users from "./routers/users.js";
+import bookings from "./routers/bookings.js";
+import equipments from "./routers/equipments.js";
 
-import sql from "./db/db.js";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -23,10 +26,11 @@ app.use(limiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-import rooms from "./routers/rooms.js";
-
 // routers
+app.use("/auth", users);
 app.use("/rooms", rooms);
+app.use("/equipments", equipments);
+app.use("/bookings", bookings);
 
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && "body" in err) {

@@ -40,12 +40,14 @@ CREATE TABLE rooms (
  CREATE TABLE room_equipments (
  	room_id uuid NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
  	equipment_id INTEGER NOT NULL REFERENCES equipments(id) ON DELETE CASCADE,
- 	quantity SMALLINT NOT NULL DEFAULT 1 CHECK (quantity > 0)
+ 	quantity SMALLINT NOT NULL DEFAULT 1 CHECK (quantity > 0),
+ 	PRIMARY KEY (room_id, equipment_id)
  );
  
  
  CREATE TABLE bookings (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  subject VARCHAR(200) NOT NULL,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   room_id UUID NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
   start_time TIMESTAMPTZ NOT NULL,
@@ -55,3 +57,6 @@ CREATE TABLE rooms (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CHECK (start_time < end_time)
 );
+
+DROP TABLE bookings;
+DROP TABLE room_equipments;
