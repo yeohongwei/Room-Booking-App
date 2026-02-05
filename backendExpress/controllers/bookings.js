@@ -25,7 +25,9 @@ export const addBooking = async (req, res) => {
     // }
 
     await pool.query(
-      "INSERT INTO bookings (subject, user_id, room_id, start_time, end_time, status) VALUES ($1, $2, $3, $4, $5, $6)",
+      `INSERT INTO bookings 
+        (subject, user_id, room_id, start_time, end_time, status) 
+            VALUES ($1, $2, $3, $4, $5, COALESCE($6, 'active'))`,
       [subject, user_id, room_id, start_time, end_time, status],
     );
     res.json({ status: "ok", msg: "booking added" });
@@ -79,12 +81,12 @@ export const updateBookingById = async (req, res) => {
     const current = rows[0];
 
     const sql = `
-    UPDATE rooms SET
+    UPDATE bookings SET
         subject = COALESCE($1, $2),
         user_id = COALESCE($3::uuid, $4::uuid),
-        room_id = COALESCE($5, $6),
-        start_time = COALESCE($7::timestamptz, $8::timestamptz)
-        end_time = COALESCE($9::boolean, $10::boolean)
+        room_id = COALESCE($5::uuid, $6::uuid),
+        start_time = COALESCE($7::timestamptz, $8::timestamptz),
+        end_time = COALESCE($9::timestamptz, $10::timestamptz),
         status = COALESCE($11::text, $12::text)
     WHERE id = $13
     `;
@@ -101,7 +103,7 @@ export const updateBookingById = async (req, res) => {
       end_time ?? null,
       current.end_time,
       status ?? null,
-      status.start_time,
+      current.status,
       id,
     ];
     await pool.query(sql, values);

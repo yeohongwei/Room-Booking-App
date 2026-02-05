@@ -172,7 +172,9 @@ export const removeEquipmentFromRoom = async (req, res) => {
     );
 
     if (rowCount === 0) {
-      res.status(404).json({ status: "error", msg: "room not found" });
+      res
+        .status(404)
+        .json({ status: "error", msg: "room or equipment not found" });
     }
 
     res.json({ status: "ok", msg: "Equipment removed from room" });

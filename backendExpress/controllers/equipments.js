@@ -56,7 +56,7 @@ export const deleteEquipmentById = async (req, res) => {
 
 export const updateEquipmentById = async (req, res) => {
   const { id } = req.params;
-  const { name, capacity, location, is_active } = req.body;
+  const { code, display_name, description } = req.body;
 
   try {
     const { rows } = await pool.query(
@@ -69,10 +69,10 @@ export const updateEquipmentById = async (req, res) => {
     const current = rows[0];
 
     const sql = `
-    UPDATE rooms SET
+    UPDATE equipments SET
         code = COALESCE($1, $2),
         display_name = COALESCE($3, $4),
-        description = COALESCE($5, $6),
+        description = COALESCE($5, $6)
     WHERE id = $7
     `;
 
