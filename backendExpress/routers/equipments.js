@@ -6,13 +6,14 @@ import {
   getEquipmentById,
   updateEquipmentById,
 } from "../controllers/equipments.js";
+import { auth, authAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.get("/", getAllEquipments);
-router.get("/:id", getEquipmentById);
-router.delete("/:id", deleteEquipmentById);
-router.put("/", addEquipment);
-router.patch("/:id", updateEquipmentById);
+router.get("/", auth, getAllEquipments);
+router.get("/:id", auth, getEquipmentById);
+router.delete("/:id", authAdmin, deleteEquipmentById);
+router.put("/", authAdmin, addEquipment);
+router.patch("/:id", authAdmin, updateEquipmentById);
 
 export default router;

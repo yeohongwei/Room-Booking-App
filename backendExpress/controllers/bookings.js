@@ -12,8 +12,7 @@ export const getAllBookings = async (req, res) => {
 
 export const addBooking = async (req, res) => {
   try {
-    const { subject, user_id, room_id, start_time, end_time, status } =
-      req.body;
+    const { user_id, room_id, start_time, end_time } = req.body;
 
     //   VALIDATION FOR status done in DB SO NOT NEEDED
     // const validStatus = ['active', 'cancelled']
@@ -26,9 +25,9 @@ export const addBooking = async (req, res) => {
 
     await pool.query(
       `INSERT INTO bookings 
-        (subject, user_id, room_id, start_time, end_time, status) 
-            VALUES ($1, $2, $3, $4, $5, COALESCE($6, 'active'))`,
-      [subject, user_id, room_id, start_time, end_time, status],
+        (user_id, room_id, start_time, end_time) 
+            VALUES ($1, $2, $3, $4)`,
+      [user_id, room_id, start_time, end_time],
     );
     res.json({ status: "ok", msg: "booking added" });
   } catch (error) {
@@ -69,7 +68,7 @@ export const deleteBookingById = async (req, res) => {
 
 export const updateBookingById = async (req, res) => {
   const { id } = req.params;
-  const { subject, user_id, room_id, start_time, end_time, status } = req.body;
+  const { user_id, room_id, start_time, end_time } = req.body;
 
   try {
     const { rows } = await pool.query("SELECT * FROM bookings WHERE id = $1", [
@@ -82,19 +81,15 @@ export const updateBookingById = async (req, res) => {
 
     const sql = `
     UPDATE bookings SET
-        subject = COALESCE($1, $2),
-        user_id = COALESCE($3::uuid, $4::uuid),
-        room_id = COALESCE($5::uuid, $6::uuid),
-        start_time = COALESCE($7::timestamptz, $8::timestamptz),
-        end_time = COALESCE($9::timestamptz, $10::timestamptz),
-        status = COALESCE($11::text, $12::text)
-    WHERE id = $13
+        user_id = COALESCE($1::uuid, $2::uuid),
+        room_id = COALESCE($3::uuid, $4::uuid),
+        start_time = COALESCE($5::timestamptz, $6::timestamptz),
+        end_time = COALESCE($7::timestamptz, $8::timestamptz)
+    WHERE id = $9
     `;
 
     const values = [
-      subject ?? null, //$1 new value or null
-      current.subject,
-      user_id ?? null,
+      user_id ?? null, //$1 new value or null
       current.user_id,
       room_id ?? null,
       current.room_id,
@@ -102,8 +97,6 @@ export const updateBookingById = async (req, res) => {
       current.start_time,
       end_time ?? null,
       current.end_time,
-      status ?? null,
-      current.status,
       id,
     ];
     await pool.query(sql, values);
@@ -139,7 +132,6 @@ export const getUserBookingsWithRoomsAndEquipmentsByUserId = async (
         b.id            AS booking_id,
         b.start_time,
         b.end_time,
-        b.status,
 
         r.id            AS room_id,
         r.name          AS room_name,
@@ -184,7 +176,6 @@ export const getRoomBookingsByRoomId = async (req, res) => {
         b.id          AS booking_id,
         b.start_time,
         b.end_time,
-        b.status,
         b.created_at,
 
         u.id          AS user_id,

@@ -47,13 +47,10 @@ CREATE TABLE rooms (
  
  CREATE TABLE bookings (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  subject VARCHAR(200) NOT NULL,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   room_id UUID NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
   start_time TIMESTAMPTZ NOT NULL,
   end_time TIMESTAMPTZ NOT NULL,
-  status VARCHAR(20) NOT NULL DEFAULT 'active'
-    CHECK (status IN ('active', 'cancelled')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CHECK (start_time < end_time)
 );

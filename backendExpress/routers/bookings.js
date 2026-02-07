@@ -8,15 +8,20 @@ import {
   getUserBookingsWithRoomsAndEquipmentsByUserId,
   updateBookingById,
 } from "../controllers/bookings.js";
+import { auth } from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.get("/", getAllBookings);
-router.put("/", addBooking);
-router.patch("/:id", updateBookingById);
-router.delete("/:id", deleteBookingById);
-router.get("/:id", getBookingById);
-router.get("/user/:userId", getUserBookingsWithRoomsAndEquipmentsByUserId);
-router.get("/room/:roomId", getRoomBookingsByRoomId);
+router.get("/", auth, getAllBookings);
+router.put("/", auth, addBooking);
+router.patch("/:id", auth, updateBookingById);
+router.delete("/:id", auth, deleteBookingById);
+router.get("/:id", auth, getBookingById);
+router.get(
+  "/user/:userId",
+  auth,
+  getUserBookingsWithRoomsAndEquipmentsByUserId,
+);
+router.get("/room/:roomId", auth, getRoomBookingsByRoomId);
 
 export default router;
