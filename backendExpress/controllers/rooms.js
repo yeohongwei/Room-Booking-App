@@ -2,7 +2,30 @@ import pool from "../db/db.js";
 
 export const getAllRooms = async (req, res) => {
   try {
-    const { rows } = await pool.query("SELECT * FROM rooms");
+    const query = `
+      SELECT
+        r.id,
+        r.name,
+        r.capacity,
+        r.location,
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'id', e.id,
+              'code', e.code,
+              'quantity', re.quantity
+            )
+          ) FILTER (WHERE e.id IS NOT NULL),
+          '[]'
+        ) AS equipments
+      FROM rooms r
+      LEFT JOIN room_equipments re ON re.room_id = r.id
+      LEFT JOIN equipments e ON e.id = re.equipment_id
+      GROUP BY r.id
+      ORDER BY r.name;
+    `;
+
+    const { rows } = await pool.query(query);
     res.json(rows);
   } catch (error) {
     console.error(error.message);
@@ -26,9 +49,30 @@ export const addRoom = async (req, res) => {
 
 export const getRoomById = async (req, res) => {
   try {
-    const { rows } = await pool.query("SELECT * FROM rooms WHERE id=$1", [
-      req.params.id,
-    ]);
+    const query = `
+      SELECT
+        r.id,
+        r.name,
+        r.capacity,
+        r.location,
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'id', e.id,
+              'code', e.code,
+              'quantity', re.quantity
+            )
+          ) FILTER (WHERE e.id IS NOT NULL),
+          '[]'
+        ) AS equipments
+      FROM rooms r
+      LEFT JOIN room_equipments re ON re.room_id = r.id
+      LEFT JOIN equipments e ON e.id = re.equipment_id
+      WHERE r.id = $1
+      GROUP BY r.id;
+    `;
+
+    const { rows } = await pool.query(query, [req.params.id]);
     if (rows.length === 0) {
       res.status(400).json({ status: "error", msg: "room not found" });
     }
