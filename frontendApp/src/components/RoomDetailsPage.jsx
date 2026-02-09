@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import UserContext from "../context/user";
 import sharedFetch from "../shared/sharedFetch";
 
@@ -41,7 +41,6 @@ const todaySgDateStr = () => {
 
 const RoomDetailsPage = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const userCtx = useContext(UserContext);
 
   const [room, setRoom] = useState(null);
@@ -236,7 +235,13 @@ const RoomDetailsPage = () => {
       <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
         <div style={{ flex: "0 0 50%" }}>
           <h3>Availability (08:00 - 18:00, 30 min)</h3>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              tableLayout: "fixed",
+            }}
+          >
             <thead>
               <tr>
                 <th
@@ -244,6 +249,7 @@ const RoomDetailsPage = () => {
                     textAlign: "left",
                     borderBottom: "1px solid",
                     padding: 8,
+                    width: 160,
                   }}
                 >
                   Time (SGT)
@@ -253,6 +259,7 @@ const RoomDetailsPage = () => {
                     textAlign: "left",
                     borderBottom: "1px solid",
                     padding: 8,
+                    width: 220,
                   }}
                 >
                   Status
@@ -273,7 +280,13 @@ const RoomDetailsPage = () => {
                     <td style={{ borderBottom: "1px solid", padding: 8 }}>
                       {minutesToLabel(s.start)} - {minutesToLabel(s.end)}
                     </td>
-                    <td style={{ borderBottom: "1px solid", padding: 8 }}>
+                    <td
+                      style={{
+                        borderBottom: "1px solid",
+                        padding: 8,
+                        wordBreak: "break-word",
+                      }}
+                    >
                       {booked ? bookedBy || "Booked" : "Available"}
                     </td>
                   </tr>

@@ -10,6 +10,14 @@ const EquipmentPage = () => {
   const isAdmin = String(userCtx.role || "").toUpperCase() === "ADMIN";
   const editDialogRef = useRef(null);
 
+  const formRowStyle = {
+    display: "grid",
+    gridTemplateColumns: "120px 1fr",
+    gap: 8,
+    alignItems: "center",
+  };
+  const formRowStyleTop = { ...formRowStyle, alignItems: "start" };
+
   const [equipments, setEquipments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -198,9 +206,13 @@ const EquipmentPage = () => {
         onSubmit={addEquipment}
         style={{ display: "grid", gap: 10, maxWidth: 520 }}
       >
-        <label>
-          Code
-          <select value={newCode} onChange={(e) => setNewCode(e.target.value)}>
+        <label style={formRowStyle}>
+          <span>Code</span>
+          <select
+            value={newCode}
+            onChange={(e) => setNewCode(e.target.value)}
+            style={{ width: "100%" }}
+          >
             {CODE_OPTIONS.map((c) => (
               <option key={c} value={c}>
                 {c}
@@ -209,21 +221,23 @@ const EquipmentPage = () => {
           </select>
         </label>
 
-        <label>
-          Display name
+        <label style={formRowStyle}>
+          <span>Display name</span>
           <input
             value={newDisplayName}
             onChange={(e) => setNewDisplayName(e.target.value)}
             required
+            style={{ width: "100%" }}
           />
         </label>
 
-        <label>
-          Description
+        <label style={formRowStyleTop}>
+          <span>Description</span>
           <textarea
             value={newDescription}
             onChange={(e) => setNewDescription(e.target.value)}
             rows={3}
+            style={{ width: "100%" }}
           />
         </label>
 
@@ -241,11 +255,12 @@ const EquipmentPage = () => {
             <h3>Update Equipment</h3>
 
             <div style={{ display: "grid", gap: 10 }}>
-              <label>
-                Code
+              <label style={formRowStyle}>
+                <span>Code</span>
                 <select
                   value={editCode}
                   onChange={(e) => setEditCode(e.target.value)}
+                  style={{ width: "100%" }}
                 >
                   {CODE_OPTIONS.map((c) => (
                     <option key={c} value={c}>
@@ -255,21 +270,23 @@ const EquipmentPage = () => {
                 </select>
               </label>
 
-              <label>
-                Display name
+              <label style={formRowStyle}>
+                <span>Display name</span>
                 <input
                   value={editDisplayName}
                   onChange={(e) => setEditDisplayName(e.target.value)}
                   required
+                  style={{ width: "100%" }}
                 />
               </label>
 
-              <label>
-                Description
+              <label style={formRowStyleTop}>
+                <span>Description</span>
                 <textarea
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
                   rows={3}
+                  style={{ width: "100%" }}
                 />
               </label>
 

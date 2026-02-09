@@ -1,11 +1,10 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
-import { Navigate, useNavigate, useParams } from "react-router";
+import { Navigate, useParams } from "react-router";
 import UserContext from "../context/user";
 import sharedFetch from "../shared/sharedFetch";
 
 const RoomAndEquipmentPage = () => {
   const { roomId } = useParams();
-  const navigate = useNavigate();
   const userCtx = useContext(UserContext);
   const isAdmin = String(userCtx.role || "").toUpperCase() === "ADMIN";
 
@@ -167,25 +166,6 @@ const RoomAndEquipmentPage = () => {
     await load();
   };
 
-  const deleteRoom = async () => {
-    const ok = window.confirm(
-      "All bookings for the room will be removed as well. Do you wish to continue?",
-    );
-    if (!ok) return;
-
-    const res = await fetchData(
-      `/rooms/${roomId}`,
-      "DELETE",
-      {},
-      userCtx.accessToken,
-    );
-    if (!res.ok) {
-      setErrorMsg(res.msg || "Failed to delete room");
-      return;
-    }
-
-    navigate("/rooms", { replace: true });
-  };
 
   return (
     <div style={{ padding: "0 16px 16px" }}>
@@ -309,12 +289,6 @@ const RoomAndEquipmentPage = () => {
 
         <button type="submit">Add</button>
       </form>
-
-      <div style={{ marginTop: 16 }}>
-        <button type="button" onClick={deleteRoom}>
-          Delete room
-        </button>
-      </div>
     </div>
   );
 };
