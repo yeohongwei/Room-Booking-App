@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router";
 import UserContext from "../context/user";
 import sharedFetch from "../shared/sharedFetch";
@@ -8,6 +8,7 @@ const CODE_OPTIONS = ["projector", "whiteboard", "video conferencing"];
 const EquipmentPage = () => {
   const userCtx = useContext(UserContext);
   const isAdmin = String(userCtx.role || "").toUpperCase() === "ADMIN";
+  const editDialogRef = useRef(null);
 
   const [equipments, setEquipments] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -66,6 +67,17 @@ const EquipmentPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin]);
 
+  useEffect(() => {
+    const dialog = editDialogRef.current;
+    if (!dialog) return;
+
+    if (editing) {
+      if (!dialog.open) dialog.showModal();
+    } else {
+      if (dialog.open) dialog.close();
+    }
+  }, [editing]);
+
   if (!isAdmin) return <Navigate to="/bookings" replace />;
 
   const openEdit = (e) => {
@@ -78,6 +90,10 @@ const EquipmentPage = () => {
   };
 
   const closeEdit = () => {
+    editDialogRef.current?.close();
+  };
+
+  const onEditDialogClose = () => {
     setEditing(null);
     setEditMsg("");
     setEditIsError(false);
@@ -215,60 +231,66 @@ const EquipmentPage = () => {
         {newMsg ? <div>{newMsg}</div> : null}
       </form>
 
-      {editing ? (
-        <dialog open style={{ padding: 16, maxWidth: 520, width: "100%" }}>
-          <h3>Update Equipment</h3>
+      <dialog
+        ref={editDialogRef}
+        onClose={onEditDialogClose}
+        style={{ padding: 16, maxWidth: 520, width: "100%" }}
+      >
+        {editing ? (
+          <>
+            <h3>Update Equipment</h3>
 
-          <div style={{ display: "grid", gap: 10 }}>
-            <label>
-              Code
-              <select
-                value={editCode}
-                onChange={(e) => setEditCode(e.target.value)}
-              >
-                {CODE_OPTIONS.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <div style={{ display: "grid", gap: 10 }}>
+              <label>
+                Code
+                <select
+                  value={editCode}
+                  onChange={(e) => setEditCode(e.target.value)}
+                >
+                  {CODE_OPTIONS.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-            <label>
-              Display name
-              <input
-                value={editDisplayName}
-                onChange={(e) => setEditDisplayName(e.target.value)}
-                required
-              />
-            </label>
+              <label>
+                Display name
+                <input
+                  value={editDisplayName}
+                  onChange={(e) => setEditDisplayName(e.target.value)}
+                  required
+                />
+              </label>
 
-            <label>
-              Description
-              <textarea
-                value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
-                rows={3}
-              />
-            </label>
+              <label>
+                Description
+                <textarea
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  rows={3}
+                />
+              </label>
 
-            {editMsg ? (
-              <div style={editIsError ? { color: "red" } : undefined}>
-                {editMsg}
+              {editMsg ? (
+                <div style={editIsError ? { color: "red" } : undefined}>
+                  {editMsg}
+                </div>
+              ) : null}
+
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <button type="button" onClick={saveEdit}>
+                  Save
+                </button>
+                <button type="button" onClick={closeEdit}>
+                  Cancel
+                </button>
               </div>
-            ) : null}
-
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button type="button" onClick={saveEdit}>
-                Save
-              </button>
-              <button type="button" onClick={closeEdit}>
-                Cancel
-              </button>
             </div>
-          </div>
-        </dialog>
-      ) : null}
+          </>
+        ) : null}
+      </dialog>
     </div>
   );
 };

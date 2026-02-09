@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import UserContext from "../context/user";
 import sharedFetch from "../shared/sharedFetch";
 
@@ -55,6 +55,7 @@ const buildTimeOptions = () => {
 
 const BookingsPage = () => {
   const userCtx = useContext(UserContext);
+  const editDialogRef = useRef(null);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -108,6 +109,17 @@ const BookingsPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userCtx.userId]);
 
+  useEffect(() => {
+    const dialog = editDialogRef.current;
+    if (!dialog) return;
+
+    if (editing) {
+      if (!dialog.open) dialog.showModal();
+    } else {
+      if (dialog.open) dialog.close();
+    }
+  }, [editing]);
+
   const openEdit = (row) => {
     setEditing(row);
     setEditStatus("");
@@ -123,6 +135,10 @@ const BookingsPage = () => {
   };
 
   const closeEdit = () => {
+    editDialogRef.current?.close();
+  };
+
+  const onEditDialogClose = () => {
     setEditing(null);
     setEditStatus("");
     setEditIsError(false);
@@ -221,66 +237,72 @@ const BookingsPage = () => {
         ))}
       </div>
 
-      {editing ? (
-        <dialog open style={{ padding: 16, maxWidth: 520, width: "100%" }}>
-          <h3>Update Booking</h3>
+      <dialog
+        ref={editDialogRef}
+        onClose={onEditDialogClose}
+        style={{ padding: 16, maxWidth: 520, width: "100%" }}
+      >
+        {editing ? (
+          <>
+            <h3>Update Booking</h3>
 
-          <div style={{ display: "grid", gap: 10 }}>
-            <label>
-              Date (SGT)
-              <input
-                type="date"
-                value={editDate}
-                onChange={(e) => setEditDate(e.target.value)}
-              />
-            </label>
+            <div style={{ display: "grid", gap: 10 }}>
+              <label>
+                Date (SGT)
+                <input
+                  type="date"
+                  value={editDate}
+                  onChange={(e) => setEditDate(e.target.value)}
+                />
+              </label>
 
-            <label>
-              Start time (SGT)
-              <select
-                value={editStart}
-                onChange={(e) => setEditStart(Number(e.target.value))}
-              >
-                {timeOptions
-                  .filter((o) => o.value <= 17 * 60 + 30)
-                  .map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-              </select>
-            </label>
+              <label>
+                Start time (SGT)
+                <select
+                  value={editStart}
+                  onChange={(e) => setEditStart(Number(e.target.value))}
+                >
+                  {timeOptions
+                    .filter((o) => o.value <= 17 * 60 + 30)
+                    .map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                </select>
+              </label>
 
-            <label>
-              Duration (max 2 hours)
-              <select
-                value={editDuration}
-                onChange={(e) => setEditDuration(Number(e.target.value))}
-              >
-                <option value={30}>30 minutes</option>
-                <option value={60}>1 hour</option>
-                <option value={90}>1 hour 30 minutes</option>
-                <option value={120}>2 hour</option>
-              </select>
-            </label>
+              <label>
+                Duration (max 2 hours)
+                <select
+                  value={editDuration}
+                  onChange={(e) => setEditDuration(Number(e.target.value))}
+                >
+                  <option value={30}>30 minutes</option>
+                  <option value={60}>1 hour</option>
+                  <option value={90}>1 hour 30 minutes</option>
+                  <option value={120}>2 hour</option>
+                </select>
+              </label>
 
-            {editStatus ? (
-              <div style={editIsError ? { color: "red" } : undefined}>
-                {editStatus}
+              {editStatus ? (
+                <div style={editIsError ? { color: "red" } : undefined}>
+                  {editStatus}
+                </div>
+              ) : null}
+
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <button type="button" onClick={saveEdit}>
+                  Save
+                </button>
+                <button type="button" onClick={closeEdit}>
+                  Cancel
+                </button>
               </div>
-            ) : null}
-
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button type="button" onClick={saveEdit}>
-                Save
-              </button>
-              <button type="button" onClick={closeEdit}>
-                Cancel
-              </button>
             </div>
-          </div>
-        </dialog>
-      ) : null}
+          </>
+        ) : null}
+      </dialog>
     </div>
   );
 };

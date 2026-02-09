@@ -1,11 +1,19 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router";
 import UserContext from "../context/user";
 import sharedFetch from "../shared/sharedFetch";
 
+const roleToLabel = (role) => {
+  const upper = String(role || "").toUpperCase();
+  if (upper === "ADMIN") return "Admin";
+  if (upper === "USER") return "User";
+  return role ? String(role) : "";
+};
+
 const SetRolePage = () => {
   const userCtx = useContext(UserContext);
   const isAdmin = String(userCtx.role || "").toUpperCase() === "ADMIN";
+  const editDialogRef = useRef(null);
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -56,6 +64,17 @@ const SetRolePage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin]);
 
+  useEffect(() => {
+    const dialog = editDialogRef.current;
+    if (!dialog) return;
+
+    if (editingUser) {
+      if (!dialog.open) dialog.showModal();
+    } else {
+      if (dialog.open) dialog.close();
+    }
+  }, [editingUser]);
+
   if (!isAdmin) return <Navigate to="/bookings" replace />;
 
   const openEdit = (u) => {
@@ -66,6 +85,10 @@ const SetRolePage = () => {
   };
 
   const closeEdit = () => {
+    editDialogRef.current?.close();
+  };
+
+  const onEditDialogClose = () => {
     setEditingUser(null);
     setEditMsg("");
   };
@@ -107,7 +130,7 @@ const SetRolePage = () => {
             <div style={{ marginBottom: 6 }}>
               <strong>{u.name}</strong> ({u.email})
             </div>
-            <div style={{ marginBottom: 10 }}>Role: {u.role}</div>
+            <div style={{ marginBottom: 10 }}>Role: {roleToLabel(u.role)}</div>
 
             <button
               type="button"
@@ -126,42 +149,53 @@ const SetRolePage = () => {
         ))}
       </div>
 
-      {editingUser ? (
-        <dialog open style={{ padding: 16, maxWidth: 520, width: "100%" }}>
-          <h3>Change user role</h3>
+      <dialog
+        ref={editDialogRef}
+        onClose={onEditDialogClose}
+        style={{ padding: 16, maxWidth: 520, width: "100%" }}
+      >
+        {editingUser ? (
+          <>
+            <h3>Change user role</h3>
 
-          <div style={{ marginBottom: 10 }}>
-            {editingUser.name} ({editingUser.email})
-          </div>
+            <div style={{ marginBottom: 10 }}>
+              {editingUser.name} ({editingUser.email})
+            </div>
 
-          <label>
-            Role
-            <select
-              value={newRole}
-              onChange={(e) => setNewRole(e.target.value)}
-              style={{ marginLeft: 8 }}
+            <label>
+              Role
+              <select
+                value={newRole}
+                onChange={(e) => setNewRole(e.target.value)}
+                style={{ marginLeft: 8 }}
+              >
+                <option value="USER">User</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+            </label>
+
+            {editMsg ? (
+              <div style={{ marginTop: 10, color: "red" }}>{editMsg}</div>
+            ) : null}
+
+            <div
+              style={{
+                marginTop: 12,
+                display: "flex",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
             >
-              <option value="USER">USER</option>
-              <option value="ADMIN">ADMIN</option>
-            </select>
-          </label>
-
-          {editMsg ? (
-            <div style={{ marginTop: 10, color: "red" }}>{editMsg}</div>
-          ) : null}
-
-          <div
-            style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}
-          >
-            <button type="button" onClick={saveRole}>
-              Save
-            </button>
-            <button type="button" onClick={closeEdit}>
-              Cancel
-            </button>
-          </div>
-        </dialog>
-      ) : null}
+              <button type="button" onClick={saveRole}>
+                Save
+              </button>
+              <button type="button" onClick={closeEdit}>
+                Cancel
+              </button>
+            </div>
+          </>
+        ) : null}
+      </dialog>
     </div>
   );
 };

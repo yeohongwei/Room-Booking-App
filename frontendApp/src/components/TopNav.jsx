@@ -1,6 +1,13 @@
 import React from "react";
 import { Link } from "react-router";
 
+const roleToLabel = (role) => {
+  const upper = String(role || "").toUpperCase();
+  if (upper === "ADMIN") return "Admin";
+  if (upper === "USER") return "User";
+  return role ? String(role) : "";
+};
+
 const TopNav = ({ isAuthenticated, name, role }) => {
   if (!isAuthenticated) {
     return (
@@ -18,7 +25,7 @@ const TopNav = ({ isAuthenticated, name, role }) => {
     <div style={{ padding: "12px 16px" }}>
       <div style={{ marginBottom: 8 }}>
         Welcome, {name || "User"}
-        {role ? ` (${role})` : ""}
+        {role ? ` (${roleToLabel(role)})` : ""}
       </div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
         <Link to="/registration">Registration</Link>
