@@ -1,14 +1,18 @@
-import React, { use, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import UserContext from "../context/user";
 import { Navigate } from "react-router";
 
 const ProtectedRoute = (props) => {
-  const userCtx = use(UserContext);
+  const userCtx = useContext(UserContext);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const hasAccessToken = userCtx.accessToken.length > 0;
-  const hasRefreshToken =
-    typeof localStorage !== "undefined" && localStorage.getItem("refreshToken");
+  const refreshToken =
+    userCtx.refreshToken ||
+    (typeof localStorage !== "undefined"
+      ? localStorage.getItem("refreshToken") || ""
+      : "");
+  const hasRefreshToken = Boolean(refreshToken);
   const isAuthenticated = hasAccessToken || hasRefreshToken;
 
   useEffect(() => {
@@ -18,12 +22,12 @@ const ProtectedRoute = (props) => {
         setIsRefreshing(true);
         try {
           const res = await fetch(
-            import.meta.env.VITE_SERVER + "/users/refresh",
+            import.meta.env.VITE_SERVER + "/auth/refresh",
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ refresh: hasRefreshToken }),
-            }
+              body: JSON.stringify({ refresh: refreshToken }),
+            },
           );
 
           if (res.ok) {
@@ -34,11 +38,11 @@ const ProtectedRoute = (props) => {
             }
           } else {
             // Refresh failed, clear refresh token and redirect to login
-            localStorage.removeItem("refreshToken");
+            userCtx.setRefreshToken?.("");
           }
         } catch (error) {
           console.error("Token refresh failed:", error);
-          localStorage.removeItem("refreshToken");
+          userCtx.setRefreshToken?.("");
         } finally {
           setIsRefreshing(false);
         }

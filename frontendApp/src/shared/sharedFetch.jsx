@@ -46,20 +46,10 @@ const sharedFetch = (options = {}) => {
     if (res.status !== 401) return false;
     if (!getRefreshToken?.()) return false;
 
-    const msg =
-      data && typeof data === "object"
-        ? data.msg || data.message || data.error
-        : typeof data === "string"
-          ? data
-          : "";
-
-    const msgLower = String(msg || "").toLowerCase();
-    return (
-      msgLower.includes("expired") ||
-      msgLower.includes("invalid") ||
-      msgLower.includes("token") ||
-      msgLower.includes("authorization")
-    );
+    // Backend commonly responds with `{ status: "error", msg: "unauthorised" }`.
+    // For a better UX, attempt a refresh on any 401 when a refresh token exists.
+    // (If refresh fails, we fall back to onAuthError.)
+    return true;
   };
 
   const fetchData = async (
