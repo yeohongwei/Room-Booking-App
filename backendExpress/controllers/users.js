@@ -14,6 +14,29 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+export const me = async (req, res) => {
+  try {
+    const id = req?.decoded?.id;
+    if (!id) {
+      return res.status(401).json({ status: "error", msg: "unauthorised" });
+    }
+
+    const { rows } = await pool.query(
+      "SELECT id, name, email, role FROM users WHERE id = $1",
+      [id],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ status: "error", msg: "user not found" });
+    }
+
+    res.json(rows[0]);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ status: "error", msg: "server error" });
+  }
+};
+
 export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;

@@ -7,6 +7,8 @@ const RoomsPage = () => {
   const userCtx = useContext(UserContext);
   const navigate = useNavigate();
 
+  const isAdmin = String(userCtx.role || "").toUpperCase() === "ADMIN";
+
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -106,6 +108,47 @@ const RoomsPage = () => {
             <button type="button" onClick={() => navigate(`/rooms/${r.id}`)}>
               View Availability
             </button>
+
+            {isAdmin ? (
+              <div
+                style={{
+                  marginTop: 10,
+                  display: "flex",
+                  gap: 8,
+                  flexWrap: "wrap",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => navigate(`/roomequipment/${r.id}`)}
+                >
+                  Update Room and equipment
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const ok = window.confirm(
+                      "All bookings for the room will be removed as well. Do you wish to continue?",
+                    );
+                    if (!ok) return;
+
+                    const res = await fetchData(
+                      `/rooms/${r.id}`,
+                      "DELETE",
+                      {},
+                      userCtx.accessToken,
+                    );
+                    if (!res.ok) {
+                      setErrorMsg(res.msg || "Delete room failed");
+                      return;
+                    }
+                    await loadRooms();
+                  }}
+                >
+                  Delete room
+                </button>
+              </div>
+            ) : null}
           </div>
         ))}
       </div>

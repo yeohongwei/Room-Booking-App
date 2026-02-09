@@ -58,7 +58,7 @@ const ProtectedRoute = (props) => {
 
   // Show loading state while refreshing token
   if (isRefreshing) {
-    return <div className="fitnessCard">Restoring session...</div>;
+    return <div>Restoring session...</div>;
   }
 
   return props.children;

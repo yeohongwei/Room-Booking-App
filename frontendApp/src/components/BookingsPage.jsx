@@ -64,6 +64,7 @@ const BookingsPage = () => {
   const [editStart, setEditStart] = useState(8 * 60);
   const [editDuration, setEditDuration] = useState(30);
   const [editStatus, setEditStatus] = useState("");
+  const [editIsError, setEditIsError] = useState(false);
 
   const fetchData = useMemo(
     () =>
@@ -110,6 +111,7 @@ const BookingsPage = () => {
   const openEdit = (row) => {
     setEditing(row);
     setEditStatus("");
+    setEditIsError(false);
     setEditDate(toSgDateInputValue(row.start_time));
 
     const startMins = toSgTimeMinutes(row.start_time);
@@ -123,6 +125,7 @@ const BookingsPage = () => {
   const closeEdit = () => {
     setEditing(null);
     setEditStatus("");
+    setEditIsError(false);
   };
 
   const saveEdit = async () => {
@@ -130,10 +133,12 @@ const BookingsPage = () => {
 
     const end = editStart + editDuration;
     if (end > 18 * 60) {
+      setEditIsError(true);
       setEditStatus("End time must be 18:00 or earlier");
       return;
     }
     if (editDuration > 120) {
+      setEditIsError(true);
       setEditStatus("Booking duration must be 2 hours or less");
       return;
     }
@@ -149,6 +154,7 @@ const BookingsPage = () => {
     );
 
     if (!res.ok) {
+      setEditIsError(true);
       setEditStatus(res.msg || "Update failed");
       return;
     }
@@ -251,15 +257,18 @@ const BookingsPage = () => {
                 value={editDuration}
                 onChange={(e) => setEditDuration(Number(e.target.value))}
               >
-                {[30, 60, 90, 120].map((d) => (
-                  <option key={d} value={d}>
-                    {d} minutes
-                  </option>
-                ))}
+                <option value={30}>30 minutes</option>
+                <option value={60}>1 hour</option>
+                <option value={90}>1 hour 30 minutes</option>
+                <option value={120}>2 hour</option>
               </select>
             </label>
 
-            {editStatus ? <div>{editStatus}</div> : null}
+            {editStatus ? (
+              <div style={editIsError ? { color: "red" } : undefined}>
+                {editStatus}
+              </div>
+            ) : null}
 
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <button type="button" onClick={saveEdit}>

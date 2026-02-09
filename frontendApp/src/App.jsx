@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import UserContext from "./context/user";
-import { Link, Navigate, Route, Routes } from "react-router";
+import { Navigate, Route, Routes } from "react-router";
 import { jwtDecode } from "jwt-decode";
 
 import Login from "./components/Login";
@@ -13,8 +13,8 @@ import BookingsPage from "./components/BookingsPage";
 import SetRolePage from "./components/SetRolePage";
 import NewRoomPage from "./components/NewRoomPage";
 import EquipmentPage from "./components/EquipmentPage";
-import RoomUsagePage from "./components/RoomUsagePage";
 import RoomAndEquipmentPage from "./components/RoomAndEquipmentPage";
+import TopNav from "./components/TopNav";
 
 const decodeClaims = (token) => {
   if (!token) return null;
@@ -23,43 +23,6 @@ const decodeClaims = (token) => {
   } catch {
     return null;
   }
-};
-
-const TopNav = ({ isAuthenticated, name, role }) => {
-  if (!isAuthenticated) {
-    return (
-      <div style={{ padding: "12px 16px" }}>
-        <div style={{ marginBottom: 8 }}>Room Booking App</div>
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <Link to="/registration">Registration</Link>
-          <Link to="/login">Login</Link>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ padding: "12px 16px" }}>
-      <div style={{ marginBottom: 8 }}>
-        Welcome, {name || "User"}
-        {role ? ` (${role})` : ""}
-      </div>
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-        <Link to="/registration">Registration</Link>
-        <Link to="/login">Login</Link>
-        <Link to="/rooms">Rooms</Link>
-        <Link to="/bookings">Bookings</Link>
-        {String(role || "").toUpperCase() === "ADMIN" ? (
-          <>
-            <Link to="/setrole">Set Role</Link>
-            <Link to="/newroom">New Room</Link>
-            <Link to="/equipment">Equipment</Link>
-            <Link to="/roomusage">Rooms Usage</Link>
-          </>
-        ) : null}
-      </div>
-    </div>
-  );
 };
 
 function App() {
@@ -78,6 +41,47 @@ function App() {
     const claims = decodeClaims(accessToken);
     if (claims?.id) setUserId(claims.id);
     if (claims?.role) setRole(claims.role);
+  }, [accessToken]);
+
+  useEffect(() => {
+    const hydrateUserProfile = async () => {
+      if (!accessToken) return;
+
+      try {
+        const res = await fetch(import.meta.env.VITE_SERVER + "/auth/me", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + accessToken,
+          },
+        });
+
+        if (!res.ok) return;
+        const contentType = res.headers.get("content-type") || "";
+        const data = await (async () => {
+          if (!contentType.includes("application/json"))
+            return await res.text();
+          const text = await res.text();
+          if (!text) return null;
+          try {
+            return JSON.parse(text);
+          } catch {
+            return text;
+          }
+        })();
+
+        if (data && typeof data === "object") {
+          if (data.id) setUserId(data.id);
+          if (data.role) setRole(data.role);
+          if (data.name) setName(data.name);
+          if (data.email) setEmail(data.email);
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    hydrateUserProfile();
   }, [accessToken]);
 
   const isAuthenticated =
@@ -173,14 +177,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <EquipmentPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/roomusage"
-            element={
-              <ProtectedRoute>
-                <RoomUsagePage />
               </ProtectedRoute>
             }
           />

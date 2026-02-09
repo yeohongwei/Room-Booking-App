@@ -18,6 +18,7 @@ const EquipmentPage = () => {
   const [editDisplayName, setEditDisplayName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editMsg, setEditMsg] = useState("");
+  const [editIsError, setEditIsError] = useState(false);
 
   const [newCode, setNewCode] = useState(CODE_OPTIONS[0]);
   const [newDisplayName, setNewDisplayName] = useState("");
@@ -73,11 +74,13 @@ const EquipmentPage = () => {
     setEditDisplayName(e.display_name || "");
     setEditDescription(e.description || "");
     setEditMsg("");
+    setEditIsError(false);
   };
 
   const closeEdit = () => {
     setEditing(null);
     setEditMsg("");
+    setEditIsError(false);
   };
 
   const saveEdit = async () => {
@@ -96,6 +99,7 @@ const EquipmentPage = () => {
 
     if (!res.ok) {
       setEditMsg(res.msg || "Update failed");
+      setEditIsError(true);
       return;
     }
 
@@ -248,7 +252,11 @@ const EquipmentPage = () => {
               />
             </label>
 
-            {editMsg ? <div>{editMsg}</div> : null}
+            {editMsg ? (
+              <div style={editIsError ? { color: "red" } : undefined}>
+                {editMsg}
+              </div>
+            ) : null}
 
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <button type="button" onClick={saveEdit}>

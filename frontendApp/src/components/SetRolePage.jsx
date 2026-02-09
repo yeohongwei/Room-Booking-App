@@ -59,6 +59,7 @@ const SetRolePage = () => {
   if (!isAdmin) return <Navigate to="/bookings" replace />;
 
   const openEdit = (u) => {
+    if (u.id === userCtx.userId) return;
     setEditingUser(u);
     setNewRole(String(u.role || "USER").toUpperCase());
     setEditMsg("");
@@ -108,7 +109,11 @@ const SetRolePage = () => {
             </div>
             <div style={{ marginBottom: 10 }}>Role: {u.role}</div>
 
-            <button type="button" onClick={() => openEdit(u)}>
+            <button
+              type="button"
+              onClick={() => openEdit(u)}
+              disabled={u.id === userCtx.userId}
+            >
               Set role
             </button>
 
@@ -141,7 +146,9 @@ const SetRolePage = () => {
             </select>
           </label>
 
-          {editMsg ? <div style={{ marginTop: 10 }}>{editMsg}</div> : null}
+          {editMsg ? (
+            <div style={{ marginTop: 10, color: "red" }}>{editMsg}</div>
+          ) : null}
 
           <div
             style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}

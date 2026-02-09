@@ -55,7 +55,7 @@ const RoomDetailsPage = () => {
   const [duration, setDuration] = useState(30);
   const [bookingStatus, setBookingStatus] = useState("");
 
-  const isAdmin = String(userCtx.role || "").toUpperCase() === "ADMIN";
+  const [bookingIsError, setBookingIsError] = useState(false);
 
   const fetchData = useMemo(
     () =>
@@ -123,10 +123,25 @@ const RoomDetailsPage = () => {
     });
   };
 
+  const getSlotBooking = (slotStartMin, slotEndMin) => {
+    const slotStartUtc = sgDateTimeToUtcMs(selectedDate, slotStartMin);
+    const slotEndUtc = sgDateTimeToUtcMs(selectedDate, slotEndMin);
+
+    return (
+      bookings.find((b) => {
+        const bStart = Date.parse(b.start_time);
+        const bEnd = Date.parse(b.end_time);
+        return bStart < slotEndUtc && bEnd > slotStartUtc;
+      }) || null
+    );
+  };
+
   const submitBooking = async () => {
     setBookingStatus("");
+    setBookingIsError(false);
 
     if (!userCtx.userId) {
+      setBookingIsError(true);
       setBookingStatus("Missing user id");
       return;
     }
@@ -134,14 +149,17 @@ const RoomDetailsPage = () => {
     const endMinutes = startMinutes + duration;
 
     if (startMinutes < 8 * 60 || startMinutes >= 18 * 60) {
+      setBookingIsError(true);
       setBookingStatus("Start time must be between 08:00 and 18:00");
       return;
     }
     if (endMinutes > 18 * 60) {
+      setBookingIsError(true);
       setBookingStatus("End time must be 18:00 or earlier");
       return;
     }
     if (duration > 120) {
+      setBookingIsError(true);
       setBookingStatus("Booking duration must be 2 hours or less");
       return;
     }
@@ -162,32 +180,13 @@ const RoomDetailsPage = () => {
     );
 
     if (!res.ok) {
+      setBookingIsError(true);
       setBookingStatus(res.msg || "Booking failed");
       return;
     }
 
     setBookingStatus("Booking added");
     await load();
-  };
-
-  const deleteRoom = async () => {
-    const ok = window.confirm(
-      "All bookings for the room will be removed as well. Do you wish to continue?",
-    );
-    if (!ok) return;
-
-    const res = await fetchData(
-      `/rooms/${id}`,
-      "DELETE",
-      {},
-      userCtx.accessToken,
-    );
-    if (!res.ok) {
-      setErrorMsg(res.msg || "Delete room failed");
-      return;
-    }
-
-    navigate("/rooms", { replace: true });
   };
 
   const timeOptions = [];
@@ -234,8 +233,8 @@ const RoomDetailsPage = () => {
         </label>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }}>
-        <div>
+      <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+        <div style={{ flex: "0 0 50%" }}>
           <h3>Availability (08:00 - 18:00, 30 min)</h3>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
@@ -263,13 +262,19 @@ const RoomDetailsPage = () => {
             <tbody>
               {slots.map((s) => {
                 const booked = isSlotBooked(s.start, s.end);
+                const booking = booked ? getSlotBooking(s.start, s.end) : null;
+                const bookedBy = booking
+                  ? booking.user_id === userCtx.userId
+                    ? "Booked by You"
+                    : `Booked by ${booking.user_name || "User"}`
+                  : null;
                 return (
                   <tr key={s.start}>
                     <td style={{ borderBottom: "1px solid", padding: 8 }}>
                       {minutesToLabel(s.start)} - {minutesToLabel(s.end)}
                     </td>
                     <td style={{ borderBottom: "1px solid", padding: 8 }}>
-                      {booked ? "Booked" : "Available"}
+                      {booked ? bookedBy || "Booked" : "Available"}
                     </td>
                   </tr>
                 );
@@ -278,7 +283,7 @@ const RoomDetailsPage = () => {
           </table>
         </div>
 
-        <div style={{ padding: 12, border: "1px solid" }}>
+        <div style={{ flex: "1", padding: 12, border: "1px solid" }}>
           <h3>Make a Booking</h3>
 
           <div style={{ display: "grid", gap: 10 }}>
@@ -302,11 +307,10 @@ const RoomDetailsPage = () => {
                 value={duration}
                 onChange={(e) => setDuration(Number(e.target.value))}
               >
-                {[30, 60, 90, 120].map((d) => (
-                  <option key={d} value={d}>
-                    {d} minutes
-                  </option>
-                ))}
+                <option value={30}>30 minutes</option>
+                <option value={60}>1 hour</option>
+                <option value={90}>1 hour 30 minutes</option>
+                <option value={120}>2 hour</option>
               </select>
             </label>
 
@@ -314,19 +318,9 @@ const RoomDetailsPage = () => {
               Book
             </button>
 
-            {bookingStatus ? <div>{bookingStatus}</div> : null}
-
-            {isAdmin ? (
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button
-                  type="button"
-                  onClick={() => navigate(`/roomequipment/${id}`)}
-                >
-                  Update Room and equipment
-                </button>
-                <button type="button" onClick={deleteRoom}>
-                  Delete room
-                </button>
+            {bookingStatus ? (
+              <div style={bookingIsError ? { color: "red" } : undefined}>
+                {bookingStatus}
               </div>
             ) : null}
           </div>

@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getAllUsers,
+  me,
   login,
   refresh,
   register,
@@ -16,6 +17,7 @@ import { auth, authAdmin } from "../middleware/auth.js";
 const router = express.Router();
 
 router.get("/users", authAdmin, getAllUsers);
+router.get("/me", auth, me);
 router.put("/register", validatedRegistrationData, checkError, register);
 router.post("/login", validateLoginData, checkError, login);
 router.post("/refresh", refresh);
