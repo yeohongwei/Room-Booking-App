@@ -193,25 +193,37 @@ const RoomDetailsPage = () => {
     timeOptions.push({ value: m, label: minutesToLabel(m) });
   }
 
-  if (loading) return <div style={{ padding: "0 16px" }}>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-6xl px-4 py-10">
+        <div className="text-sm text-slate-600">Loading...</div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ padding: "0 16px 16px" }}>
-      <h2>Room Details</h2>
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+        Room Details
+      </h2>
 
-      {errorMsg ? <div>{errorMsg}</div> : null}
+      {errorMsg ? (
+        <div className="mt-4 text-sm text-red-600">{errorMsg}</div>
+      ) : null}
 
       {room ? (
-        <div style={{ padding: 12, border: "1px solid", marginBottom: 12 }}>
-          <div style={{ marginBottom: 6 }}>
-            <strong>{room.name}</strong>
+        <div className="mt-4 rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur">
+          <div className="text-base font-semibold text-slate-900">
+            {room.name}
           </div>
-          <div style={{ marginBottom: 6 }}>Capacity: {room.capacity}</div>
-          <div style={{ marginBottom: 6 }}>
+          <div className="mt-1 text-sm text-slate-600">
+            Capacity: {room.capacity}
+          </div>
+          <div className="mt-1 text-sm text-slate-600">
             Location: {room.location || "-"}
           </div>
-          <div>
-            Equipments:{" "}
+          <div className="mt-2 text-sm text-slate-700">
+            <span className="font-medium">Equipments:</span>{" "}
             {Array.isArray(room.equipments) && room.equipments.length
               ? room.equipments
                   .map((e) => `${e.code} x${e.quantity}`)
@@ -221,90 +233,82 @@ const RoomDetailsPage = () => {
         </div>
       ) : null}
 
-      <div style={{ display: "grid", gap: 8, maxWidth: 420, marginBottom: 12 }}>
-        <label>
-          Select date (SGT)
+      <div className="mt-4 max-w-sm">
+        <label className="grid gap-1">
+          <span className="text-sm font-medium text-slate-700">
+            Select date (SGT)
+          </span>
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
+            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </label>
       </div>
 
-      <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-        <div style={{ flex: "0 0 50%" }}>
-          <h3>Availability (08:00 - 18:00, 30 min)</h3>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              tableLayout: "fixed",
-            }}
-          >
-            <thead>
-              <tr>
-                <th
-                  style={{
-                    textAlign: "left",
-                    borderBottom: "1px solid",
-                    padding: 8,
-                    width: 160,
-                  }}
-                >
-                  Time (SGT)
-                </th>
-                <th
-                  style={{
-                    textAlign: "left",
-                    borderBottom: "1px solid",
-                    padding: 8,
-                    width: 220,
-                  }}
-                >
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {slots.map((s) => {
-                const booked = isSlotBooked(s.start, s.end);
-                const booking = booked ? getSlotBooking(s.start, s.end) : null;
-                const bookedBy = booking
-                  ? booking.user_id === userCtx.userId
-                    ? "Booked by You"
-                    : `Booked by ${booking.user_name || "User"}`
-                  : null;
-                return (
-                  <tr key={s.start}>
-                    <td style={{ borderBottom: "1px solid", padding: 8 }}>
-                      {minutesToLabel(s.start)} - {minutesToLabel(s.end)}
-                    </td>
-                    <td
-                      style={{
-                        borderBottom: "1px solid",
-                        padding: 8,
-                        wordBreak: "break-word",
-                      }}
-                    >
-                      {booked ? bookedBy || "Booked" : "Available"}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+        <div className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur">
+          <h3 className="text-base font-semibold text-slate-900">
+            Availability
+          </h3>
+          <p className="mt-1 text-sm text-slate-600">
+            08:00 - 18:00 (30 min slots)
+          </p>
+
+          <div className="mt-4 overflow-hidden rounded-lg border border-slate-200">
+            <table className="w-full table-fixed border-collapse">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="w-40 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                    Time (SGT)
+                  </th>
+                  <th className="w-56 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 bg-white">
+                {slots.map((s) => {
+                  const booked = isSlotBooked(s.start, s.end);
+                  const booking = booked
+                    ? getSlotBooking(s.start, s.end)
+                    : null;
+                  const bookedBy = booking
+                    ? booking.user_id === userCtx.userId
+                      ? "Booked by You"
+                      : `Booked by ${booking.user_name || "User"}`
+                    : null;
+                  return (
+                    <tr key={s.start} className="text-sm">
+                      <td className="px-3 py-2 text-slate-700">
+                        {minutesToLabel(s.start)} - {minutesToLabel(s.end)}
+                      </td>
+                      <td className="px-3 py-2 text-slate-700 break-words">
+                        {booked ? bookedBy || "Booked" : "Available"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div style={{ flex: "1", padding: 12, border: "1px solid" }}>
-          <h3>Make a Booking</h3>
+        <div className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur">
+          <h3 className="text-base font-semibold text-slate-900">
+            Make a Booking
+          </h3>
 
-          <div style={{ display: "grid", gap: 10 }}>
-            <label>
-              Start time (SGT)
+          <div className="mt-4 grid gap-4">
+            <label className="grid gap-1">
+              <span className="text-sm font-medium text-slate-700">
+                Start time (SGT)
+              </span>
               <select
                 value={startMinutes}
                 onChange={(e) => setStartMinutes(Number(e.target.value))}
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 {timeOptions.map((o) => (
                   <option key={o.value} value={o.value}>
@@ -314,11 +318,14 @@ const RoomDetailsPage = () => {
               </select>
             </label>
 
-            <label>
-              Duration (max 2 hours)
+            <label className="grid gap-1">
+              <span className="text-sm font-medium text-slate-700">
+                Duration (max 2 hours)
+              </span>
               <select
                 value={duration}
                 onChange={(e) => setDuration(Number(e.target.value))}
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value={30}>30 minutes</option>
                 <option value={60}>1 hour</option>
@@ -327,12 +334,22 @@ const RoomDetailsPage = () => {
               </select>
             </label>
 
-            <button type="button" onClick={submitBooking}>
+            <button
+              type="button"
+              onClick={submitBooking}
+              className="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            >
               Book
             </button>
 
             {bookingStatus ? (
-              <div style={bookingIsError ? { color: "red" } : undefined}>
+              <div
+                className={
+                  bookingIsError
+                    ? "text-sm text-red-600"
+                    : "text-sm text-emerald-700"
+                }
+              >
                 {bookingStatus}
               </div>
             ) : null}

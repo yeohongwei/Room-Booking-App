@@ -166,129 +166,171 @@ const RoomAndEquipmentPage = () => {
     await load();
   };
 
-
   return (
-    <div style={{ padding: "0 16px 16px" }}>
-      <h2>Room and Equipment</h2>
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div>
+        <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+          Room & Equipment
+        </h2>
+        <p className="mt-1 text-sm text-slate-600">
+          Update room details and manage assigned equipment.
+        </p>
+      </div>
 
-      {loading ? <div>Loading...</div> : null}
-      {statusMsg ? <div>{statusMsg}</div> : null}
-      {errorMsg ? <div>{errorMsg}</div> : null}
+      {loading ? (
+        <div className="mt-4 text-sm text-slate-600">Loading...</div>
+      ) : null}
+      {statusMsg ? (
+        <div className="mt-4 text-sm text-emerald-700">{statusMsg}</div>
+      ) : null}
+      {errorMsg ? (
+        <div className="mt-4 text-sm text-red-600">{errorMsg}</div>
+      ) : null}
 
-      <h3>Room details</h3>
-      <form
-        onSubmit={updateRoom}
-        style={{ display: "grid", gap: 10, maxWidth: 520 }}
-      >
-        <label>
-          Name
-          <input
-            value={editName}
-            onChange={(e) => setEditName(e.target.value)}
-            required
-          />
-        </label>
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <div className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur">
+          <h3 className="text-base font-semibold text-slate-900">
+            Room details
+          </h3>
+          <form onSubmit={updateRoom} className="mt-4 grid gap-4">
+            <label className="grid gap-1">
+              <span className="text-sm font-medium text-slate-700">Name</span>
+              <input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                required
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </label>
 
-        <label>
-          Capacity
-          <input
-            type="number"
-            min={1}
-            value={editCapacity}
-            onChange={(e) => setEditCapacity(e.target.value)}
-            required
-          />
-        </label>
+            <label className="grid gap-1">
+              <span className="text-sm font-medium text-slate-700">
+                Capacity
+              </span>
+              <input
+                type="number"
+                min={1}
+                value={editCapacity}
+                onChange={(e) => setEditCapacity(e.target.value)}
+                required
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </label>
 
-        <label>
-          Location
-          <input
-            value={editLocation}
-            onChange={(e) => setEditLocation(e.target.value)}
-          />
-        </label>
+            <label className="grid gap-1">
+              <span className="text-sm font-medium text-slate-700">
+                Location
+              </span>
+              <input
+                value={editLocation}
+                onChange={(e) => setEditLocation(e.target.value)}
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </label>
 
-        <button type="submit">Update room</button>
-      </form>
+            <button
+              type="submit"
+              className="mt-1 inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            >
+              Update room
+            </button>
+          </form>
+        </div>
 
-      <h3 style={{ marginTop: 16 }}>Equipment for room</h3>
-      {room && Array.isArray(room.equipments) && room.equipments.length ? (
-        <div style={{ display: "grid", gap: 10, marginBottom: 12 }}>
-          {room.equipments.map((e) => (
-            <div key={e.id} style={{ padding: 12, border: "1px solid" }}>
-              <div style={{ marginBottom: 6 }}>
-                <strong>{e.code}</strong>
-              </div>
+        <div className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur">
+          <h3 className="text-base font-semibold text-slate-900">
+            Equipment for room
+          </h3>
 
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  flexWrap: "wrap",
-                  alignItems: "center",
-                }}
-              >
-                <label>
-                  Quantity
-                  <input
-                    type="number"
-                    min={1}
-                    defaultValue={e.quantity}
-                    onBlur={(ev) => {
-                      const q = Number(ev.target.value);
-                      if (Number.isFinite(q) && q > 0) {
-                        upsertEquipment(e.id, q);
-                      }
-                    }}
-                    style={{ marginLeft: 8, width: 100 }}
-                  />
-                </label>
-                <button type="button" onClick={() => removeEquipment(e.id)}>
-                  Delete
-                </button>
-              </div>
+          {room && Array.isArray(room.equipments) && room.equipments.length ? (
+            <div className="mt-4 grid gap-3">
+              {room.equipments.map((e) => (
+                <div
+                  key={e.id}
+                  className="rounded-lg border border-slate-200 bg-white p-3"
+                >
+                  <div className="text-sm font-semibold text-slate-900">
+                    {e.code}
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <label className="flex items-center gap-2 text-sm text-slate-700">
+                      <span className="font-medium">Quantity</span>
+                      <input
+                        type="number"
+                        min={1}
+                        defaultValue={e.quantity}
+                        onBlur={(ev) => {
+                          const q = Number(ev.target.value);
+                          if (Number.isFinite(q) && q > 0) {
+                            upsertEquipment(e.id, q);
+                          }
+                        }}
+                        className="w-24 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={() => removeEquipment(e.id)}
+                      className="inline-flex items-center justify-center rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          ) : (
+            <div className="mt-4 text-sm text-slate-600">
+              No equipment assigned.
+            </div>
+          )}
+
+          <form onSubmit={addEquipment} className="mt-6 grid gap-4">
+            <div className="text-sm font-semibold text-slate-900">
+              Add equipment
+            </div>
+
+            <label className="grid gap-1">
+              <span className="text-sm font-medium text-slate-700">
+                Equipment
+              </span>
+              <select
+                value={addEquipmentId}
+                onChange={(e) => setAddEquipmentId(e.target.value)}
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                {allEquipments.map((e) => (
+                  <option key={e.id} value={String(e.id)}>
+                    {e.code} - {e.display_name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="grid gap-1">
+              <span className="text-sm font-medium text-slate-700">
+                Quantity
+              </span>
+              <input
+                type="number"
+                min={1}
+                value={addQuantity}
+                onChange={(e) => setAddQuantity(e.target.value)}
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </label>
+
+            <button
+              type="submit"
+              className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Add
+            </button>
+          </form>
         </div>
-      ) : (
-        <div style={{ marginBottom: 12 }}>No equipment assigned.</div>
-      )}
-
-      <form
-        onSubmit={addEquipment}
-        style={{ display: "grid", gap: 10, maxWidth: 520 }}
-      >
-        <div>
-          <strong>Add equipment</strong>
-        </div>
-
-        <label>
-          Equipment
-          <select
-            value={addEquipmentId}
-            onChange={(e) => setAddEquipmentId(e.target.value)}
-            style={{ marginLeft: 8 }}
-          >
-            {allEquipments.map((e) => (
-              <option key={e.id} value={String(e.id)}>
-                {e.code} - {e.display_name}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          Quantity
-          <input
-            type="number"
-            min={1}
-            value={addQuantity}
-            onChange={(e) => setAddQuantity(e.target.value)}
-          />
-        </label>
-
-        <button type="submit">Add</button>
-      </form>
+      </div>
     </div>
   );
 };

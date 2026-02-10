@@ -10,13 +10,8 @@ const EquipmentPage = () => {
   const isAdmin = String(userCtx.role || "").toUpperCase() === "ADMIN";
   const editDialogRef = useRef(null);
 
-  const formRowStyle = {
-    display: "grid",
-    gridTemplateColumns: "120px 1fr",
-    gap: 8,
-    alignItems: "center",
-  };
-  const formRowStyleTop = { ...formRowStyle, alignItems: "start" };
+  const formRowClass = "grid grid-cols-[120px_1fr] gap-2 items-center";
+  const formRowTopClass = "grid grid-cols-[120px_1fr] gap-2 items-start";
 
   const [equipments, setEquipments] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -172,28 +167,51 @@ const EquipmentPage = () => {
   };
 
   return (
-    <div style={{ padding: "0 16px 16px" }}>
-      <h2>Equipment</h2>
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div>
+        <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+          Equipment
+        </h2>
+        <p className="mt-1 text-sm text-slate-600">
+          Create, update, and manage the equipment catalogue.
+        </p>
+      </div>
 
-      {loading ? <div>Loading...</div> : null}
-      {errorMsg ? <div>{errorMsg}</div> : null}
+      {loading ? (
+        <div className="mt-4 text-sm text-slate-600">Loading...</div>
+      ) : null}
+      {errorMsg ? (
+        <div className="mt-4 text-sm text-red-600">{errorMsg}</div>
+      ) : null}
 
-      <div style={{ display: "grid", gap: 10, marginBottom: 16 }}>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {equipments.map((e) => (
-          <div key={e.id} style={{ padding: 12, border: "1px solid" }}>
-            <div style={{ marginBottom: 6 }}>
-              <strong>{e.display_name}</strong>
+          <div
+            key={e.id}
+            className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur"
+          >
+            <div className="text-base font-semibold text-slate-900">
+              {e.display_name}
             </div>
-            <div style={{ marginBottom: 6 }}>Code: {e.code}</div>
-            <div style={{ marginBottom: 10 }}>
-              Description: {e.description || "-"}
+            <div className="mt-1 text-sm text-slate-600">Code: {e.code}</div>
+            <div className="mt-2 text-sm text-slate-700">
+              <span className="font-medium">Description:</span>{" "}
+              {e.description || "-"}
             </div>
 
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button type="button" onClick={() => openEdit(e)}>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => openEdit(e)}
+                className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
                 Update
               </button>
-              <button type="button" onClick={() => deleteEquipment(e.id)}>
+              <button
+                type="button"
+                onClick={() => deleteEquipment(e.id)}
+                className="inline-flex items-center justify-center rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
+              >
                 Delete
               </button>
             </div>
@@ -201,66 +219,76 @@ const EquipmentPage = () => {
         ))}
       </div>
 
-      <h3>Add Equipment</h3>
-      <form
-        onSubmit={addEquipment}
-        style={{ display: "grid", gap: 10, maxWidth: 520 }}
-      >
-        <label style={formRowStyle}>
-          <span>Code</span>
-          <select
-            value={newCode}
-            onChange={(e) => setNewCode(e.target.value)}
-            style={{ width: "100%" }}
+      <div className="mt-10 max-w-xl rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur">
+        <h3 className="text-base font-semibold text-slate-900">
+          Add Equipment
+        </h3>
+        <form onSubmit={addEquipment} className="mt-4 grid gap-4">
+          <label className={`${formRowClass} text-sm text-slate-700`}>
+            <span className="font-medium">Code</span>
+            <select
+              value={newCode}
+              onChange={(e) => setNewCode(e.target.value)}
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              {CODE_OPTIONS.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className={`${formRowClass} text-sm text-slate-700`}>
+            <span className="font-medium">Display name</span>
+            <input
+              value={newDisplayName}
+              onChange={(e) => setNewDisplayName(e.target.value)}
+              required
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </label>
+
+          <label className={`${formRowTopClass} text-sm text-slate-700`}>
+            <span className="pt-2 font-medium">Description</span>
+            <textarea
+              value={newDescription}
+              onChange={(e) => setNewDescription(e.target.value)}
+              rows={3}
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </label>
+
+          <button
+            type="submit"
+            className="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
           >
-            {CODE_OPTIONS.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label style={formRowStyle}>
-          <span>Display name</span>
-          <input
-            value={newDisplayName}
-            onChange={(e) => setNewDisplayName(e.target.value)}
-            required
-            style={{ width: "100%" }}
-          />
-        </label>
-
-        <label style={formRowStyleTop}>
-          <span>Description</span>
-          <textarea
-            value={newDescription}
-            onChange={(e) => setNewDescription(e.target.value)}
-            rows={3}
-            style={{ width: "100%" }}
-          />
-        </label>
-
-        <button type="submit">Add</button>
-        {newMsg ? <div>{newMsg}</div> : null}
-      </form>
+            Add
+          </button>
+          {newMsg ? (
+            <div className="text-sm text-slate-700">{newMsg}</div>
+          ) : null}
+        </form>
+      </div>
 
       <dialog
         ref={editDialogRef}
         onClose={onEditDialogClose}
-        style={{ padding: 16, maxWidth: 520, width: "100%" }}
+        className="w-full max-w-xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
       >
         {editing ? (
           <>
-            <h3>Update Equipment</h3>
+            <h3 className="text-lg font-semibold tracking-tight text-slate-900">
+              Update Equipment
+            </h3>
 
-            <div style={{ display: "grid", gap: 10 }}>
-              <label style={formRowStyle}>
-                <span>Code</span>
+            <div className="mt-4 grid gap-4">
+              <label className={`${formRowClass} text-sm text-slate-700`}>
+                <span className="font-medium">Code</span>
                 <select
                   value={editCode}
                   onChange={(e) => setEditCode(e.target.value)}
-                  style={{ width: "100%" }}
+                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   {CODE_OPTIONS.map((c) => (
                     <option key={c} value={c}>
@@ -270,37 +298,51 @@ const EquipmentPage = () => {
                 </select>
               </label>
 
-              <label style={formRowStyle}>
-                <span>Display name</span>
+              <label className={`${formRowClass} text-sm text-slate-700`}>
+                <span className="font-medium">Display name</span>
                 <input
                   value={editDisplayName}
                   onChange={(e) => setEditDisplayName(e.target.value)}
                   required
-                  style={{ width: "100%" }}
+                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </label>
 
-              <label style={formRowStyleTop}>
-                <span>Description</span>
+              <label className={`${formRowTopClass} text-sm text-slate-700`}>
+                <span className="pt-2 font-medium">Description</span>
                 <textarea
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
                   rows={3}
-                  style={{ width: "100%" }}
+                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </label>
 
               {editMsg ? (
-                <div style={editIsError ? { color: "red" } : undefined}>
+                <div
+                  className={
+                    editIsError
+                      ? "text-sm text-red-600"
+                      : "text-sm text-emerald-700"
+                  }
+                >
                   {editMsg}
                 </div>
               ) : null}
 
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button type="button" onClick={saveEdit}>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={saveEdit}
+                  className="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                >
                   Save
                 </button>
-                <button type="button" onClick={closeEdit}>
+                <button
+                  type="button"
+                  onClick={closeEdit}
+                  className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
                   Cancel
                 </button>
               </div>

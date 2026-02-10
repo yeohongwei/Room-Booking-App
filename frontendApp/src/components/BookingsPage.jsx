@@ -198,38 +198,68 @@ const BookingsPage = () => {
   const timeOptions = buildTimeOptions();
 
   return (
-    <div style={{ padding: "0 16px 16px" }}>
-      <h2>My Bookings</h2>
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+        My Bookings
+      </h2>
+      <p className="mt-1 text-sm text-slate-600">
+        Update or delete upcoming bookings.
+      </p>
 
-      {loading ? <div>Loading...</div> : null}
-      {errorMsg ? <div>{errorMsg}</div> : null}
+      {loading ? (
+        <div className="mt-4 text-sm text-slate-600">Loading...</div>
+      ) : null}
+      {errorMsg ? (
+        <div className="mt-4 text-sm text-red-600">{errorMsg}</div>
+      ) : null}
 
-      {bookings.length === 0 && !loading ? <div>No bookings found.</div> : null}
+      {bookings.length === 0 && !loading ? (
+        <div className="mt-6 rounded-xl border border-slate-200 bg-white/80 p-4 text-sm text-slate-600 shadow-sm backdrop-blur">
+          No bookings found.
+        </div>
+      ) : null}
 
-      <div style={{ display: "grid", gap: 12 }}>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {bookings.map((b) => (
-          <div key={b.booking_id} style={{ padding: 12, border: "1px solid" }}>
-            <div style={{ marginBottom: 6 }}>
-              <strong>{b.room_name}</strong> (Capacity {b.capacity})
+          <div
+            key={b.booking_id}
+            className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur"
+          >
+            <div className="text-base font-semibold text-slate-900">
+              {b.room_name}
             </div>
-            <div style={{ marginBottom: 6 }}>Location: {b.location || "-"}</div>
-            <div style={{ marginBottom: 6 }}>
-              Time (SGT): {toSgDateInputValue(b.start_time)}{" "}
+            <div className="mt-1 text-sm text-slate-600">
+              Capacity {b.capacity}
+            </div>
+            <div className="mt-1 text-sm text-slate-600">
+              Location: {b.location || "-"}
+            </div>
+            <div className="mt-2 text-sm text-slate-700">
+              <span className="font-medium">Time (SGT):</span>{" "}
+              {toSgDateInputValue(b.start_time)}{" "}
               {minutesToLabel(toSgTimeMinutes(b.start_time))} -{" "}
               {minutesToLabel(toSgTimeMinutes(b.end_time))}
             </div>
-            <div style={{ marginBottom: 10 }}>
-              Equipments:{" "}
+            <div className="mt-2 text-sm text-slate-700">
+              <span className="font-medium">Equipments:</span>{" "}
               {Array.isArray(b.equipments) && b.equipments.length
                 ? b.equipments.map((e) => `${e.code} x${e.quantity}`).join(", ")
                 : "-"}
             </div>
 
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button type="button" onClick={() => openEdit(b)}>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => openEdit(b)}
+                className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
                 Update
               </button>
-              <button type="button" onClick={() => deleteBooking(b.booking_id)}>
+              <button
+                type="button"
+                onClick={() => deleteBooking(b.booking_id)}
+                className="inline-flex items-center justify-center rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
+              >
                 Delete
               </button>
             </div>
@@ -240,27 +270,35 @@ const BookingsPage = () => {
       <dialog
         ref={editDialogRef}
         onClose={onEditDialogClose}
-        style={{ padding: 16, maxWidth: 520, width: "100%" }}
+        className="w-full max-w-xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
       >
         {editing ? (
           <>
-            <h3>Update Booking</h3>
+            <h3 className="text-lg font-semibold tracking-tight text-slate-900">
+              Update Booking
+            </h3>
 
-            <div style={{ display: "grid", gap: 10 }}>
-              <label>
-                Date (SGT)
+            <div className="mt-4 grid gap-4">
+              <label className="grid gap-1">
+                <span className="text-sm font-medium text-slate-700">
+                  Date (SGT)
+                </span>
                 <input
                   type="date"
                   value={editDate}
                   onChange={(e) => setEditDate(e.target.value)}
+                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </label>
 
-              <label>
-                Start time (SGT)
+              <label className="grid gap-1">
+                <span className="text-sm font-medium text-slate-700">
+                  Start time (SGT)
+                </span>
                 <select
                   value={editStart}
                   onChange={(e) => setEditStart(Number(e.target.value))}
+                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   {timeOptions
                     .filter((o) => o.value <= 17 * 60 + 30)
@@ -272,11 +310,14 @@ const BookingsPage = () => {
                 </select>
               </label>
 
-              <label>
-                Duration (max 2 hours)
+              <label className="grid gap-1">
+                <span className="text-sm font-medium text-slate-700">
+                  Duration (max 2 hours)
+                </span>
                 <select
                   value={editDuration}
                   onChange={(e) => setEditDuration(Number(e.target.value))}
+                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value={30}>30 minutes</option>
                   <option value={60}>1 hour</option>
@@ -286,16 +327,30 @@ const BookingsPage = () => {
               </label>
 
               {editStatus ? (
-                <div style={editIsError ? { color: "red" } : undefined}>
+                <div
+                  className={
+                    editIsError
+                      ? "text-sm text-red-600"
+                      : "text-sm text-emerald-700"
+                  }
+                >
                   {editStatus}
                 </div>
               ) : null}
 
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button type="button" onClick={saveEdit}>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={saveEdit}
+                  className="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                >
                   Save
                 </button>
-                <button type="button" onClick={closeEdit}>
+                <button
+                  type="button"
+                  onClick={closeEdit}
+                  className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
                   Cancel
                 </button>
               </div>

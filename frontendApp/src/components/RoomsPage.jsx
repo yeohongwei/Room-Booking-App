@@ -58,97 +58,121 @@ const RoomsPage = () => {
   });
 
   return (
-    <div style={{ padding: "0 16px 16px" }}>
-      <h2>Rooms</h2>
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+            Rooms
+          </h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Browse rooms and check availability.
+          </p>
+        </div>
 
-      <div
-        style={{
-          marginBottom: 12,
-          display: "flex",
-          gap: 12,
-          flexWrap: "wrap",
-          alignItems: "center",
-        }}
-      >
-        <label>
-          Capacity filter
-          <select
-            value={capacityFilter}
-            onChange={(e) => setCapacityFilter(e.target.value)}
-            style={{ marginLeft: 8 }}
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="flex items-center gap-2 text-sm text-slate-700">
+            <span className="font-medium">Capacity</span>
+            <select
+              value={capacityFilter}
+              onChange={(e) => setCapacityFilter(e.target.value)}
+              className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="ALL">All</option>
+              <option value="LE4">4 and below</option>
+              <option value="5TO12">5 to 12</option>
+              <option value="GE13">13 and above</option>
+            </select>
+          </label>
+
+          <button
+            type="button"
+            onClick={loadRooms}
+            className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
-            <option value="ALL">All</option>
-            <option value="LE4">4 and below</option>
-            <option value="5TO12">5 to 12</option>
-            <option value="GE13">13 and above</option>
-          </select>
-        </label>
-        <button type="button" onClick={loadRooms}>
-          Refresh
-        </button>
+            Refresh
+          </button>
+        </div>
       </div>
 
-      {loading ? <div>Loading...</div> : null}
-      {errorMsg ? <div>{errorMsg}</div> : null}
+      {loading ? (
+        <div className="mt-4 text-sm text-slate-600">Loading...</div>
+      ) : null}
+      {errorMsg ? (
+        <div className="mt-4 text-sm text-red-600">{errorMsg}</div>
+      ) : null}
 
-      <div style={{ display: "grid", gap: 12 }}>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {filteredRooms.map((r) => (
-          <div key={r.id} style={{ padding: 12, border: "1px solid" }}>
-            <div style={{ marginBottom: 6 }}>
-              <strong>{r.name}</strong>
+          <div
+            key={r.id}
+            className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="text-base font-semibold text-slate-900">
+                  {r.name}
+                </div>
+                <div className="mt-1 text-sm text-slate-600">
+                  Capacity: {r.capacity}
+                </div>
+                <div className="mt-1 text-sm text-slate-600">
+                  Location: {r.location || "-"}
+                </div>
+              </div>
             </div>
-            <div style={{ marginBottom: 6 }}>Capacity: {r.capacity}</div>
-            <div style={{ marginBottom: 6 }}>Location: {r.location || "-"}</div>
-            <div style={{ marginBottom: 10 }}>
-              Equipments:{" "}
+
+            <div className="mt-3 text-sm text-slate-700">
+              <span className="font-medium">Equipments:</span>{" "}
               {Array.isArray(r.equipments) && r.equipments.length
                 ? r.equipments.map((e) => `${e.code} x${e.quantity}`).join(", ")
                 : "-"}
             </div>
-            <button type="button" onClick={() => navigate(`/rooms/${r.id}`)}>
-              View Availability
-            </button>
 
-            {isAdmin ? (
-              <div
-                style={{
-                  marginTop: 10,
-                  display: "flex",
-                  gap: 8,
-                  flexWrap: "wrap",
-                }}
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => navigate(`/rooms/${r.id}`)}
+                className="inline-flex items-center justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700"
               >
-                <button
-                  type="button"
-                  onClick={() => navigate(`/roomequipment/${r.id}`)}
-                >
-                  Update Room and equipment
-                </button>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const ok = window.confirm(
-                      "All bookings for the room will be removed as well. Do you wish to continue?",
-                    );
-                    if (!ok) return;
+                View Availability
+              </button>
 
-                    const res = await fetchData(
-                      `/rooms/${r.id}`,
-                      "DELETE",
-                      {},
-                      userCtx.accessToken,
-                    );
-                    if (!res.ok) {
-                      setErrorMsg(res.msg || "Delete room failed");
-                      return;
-                    }
-                    await loadRooms();
-                  }}
-                >
-                  Delete room
-                </button>
-              </div>
-            ) : null}
+              {isAdmin ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/roomequipment/${r.id}`)}
+                    className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    Update Room & equipment
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const ok = window.confirm(
+                        "All bookings for the room will be removed as well. Do you wish to continue?",
+                      );
+                      if (!ok) return;
+
+                      const res = await fetchData(
+                        `/rooms/${r.id}`,
+                        "DELETE",
+                        {},
+                        userCtx.accessToken,
+                      );
+                      if (!res.ok) {
+                        setErrorMsg(res.msg || "Delete room failed");
+                        return;
+                      }
+                      await loadRooms();
+                    }}
+                    className="inline-flex items-center justify-center rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
+                  >
+                    Delete room
+                  </button>
+                </>
+              ) : null}
+            </div>
           </div>
         ))}
       </div>

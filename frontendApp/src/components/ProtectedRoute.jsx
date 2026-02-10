@@ -58,7 +58,13 @@ const ProtectedRoute = (props) => {
 
   // Show loading state while refreshing token
   if (isRefreshing) {
-    return <div>Restoring session...</div>;
+    return (
+      <div className="mx-auto max-w-6xl px-4 py-10">
+        <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white/80 px-4 py-3 text-sm text-slate-700 shadow-sm backdrop-blur">
+          Restoring session...
+        </div>
+      </div>
+    );
   }
 
   return props.children;
