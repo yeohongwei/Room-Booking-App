@@ -59,7 +59,7 @@ const BookingsPage = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [equipmentNameByCode, setEquipmentNameByCode] = useState({});
+  const [showPast, setShowPast] = useState(false);
 
   const [editing, setEditing] = useState(null); // booking row
   const [editDate, setEditDate] = useState("");
@@ -109,27 +109,6 @@ const BookingsPage = () => {
     loadBookings();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userCtx.userId]);
-
-  useEffect(() => {
-    const loadEquipmentNames = async () => {
-      const res = await fetchData(
-        "/equipments",
-        "GET",
-        null,
-        userCtx.accessToken,
-      );
-      if (!res.ok) return;
-      const list = Array.isArray(res.data) ? res.data : [];
-      const map = {};
-      for (const eq of list) {
-        if (eq?.code) map[String(eq.code)] = eq.display_name || eq.code;
-      }
-      setEquipmentNameByCode(map);
-    };
-
-    loadEquipmentNames();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     const dialog = editDialogRef.current;
@@ -219,14 +198,40 @@ const BookingsPage = () => {
 
   const timeOptions = buildTimeOptions();
 
+  const nowMs = Date.now();
+  const upcomingBookings = bookings.filter((b) => {
+    const start = Date.parse(b.start_time);
+    if (!Number.isFinite(start)) return true;
+    return start >= nowMs;
+  });
+  const pastBookings = bookings.filter((b) => {
+    const start = Date.parse(b.start_time);
+    if (!Number.isFinite(start)) return false;
+    return start < nowMs;
+  });
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <h2 className="text-xl font-semibold tracking-tight text-slate-900">
-        My Bookings
-      </h2>
-      <p className="mt-1 text-sm text-slate-600">
-        Update or delete upcoming bookings.
-      </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+            My Bookings
+          </h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Update or delete upcoming bookings.
+          </p>
+        </div>
+
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowPast((v) => !v)}
+            className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            {showPast ? "Hide Past" : "Show Past"}
+          </button>
+        </div>
+      </div>
 
       {loading ? (
         <div className="mt-4 text-sm text-slate-600">Loading...</div>
@@ -235,44 +240,38 @@ const BookingsPage = () => {
         <div className="mt-4 text-sm text-red-600">{errorMsg}</div>
       ) : null}
 
-      {bookings.length === 0 && !loading ? (
+      {upcomingBookings.length === 0 && !loading ? (
         <div className="mt-6 rounded-xl border border-slate-200 bg-white/80 p-4 text-sm text-slate-600 shadow-sm backdrop-blur">
-          No bookings found.
+          No upcoming bookings found.
         </div>
       ) : null}
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {bookings.map((b) => (
+        {upcomingBookings.map((b) => (
           <div
             key={b.booking_id}
             className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur"
           >
-            <div className="text-base font-semibold text-slate-900">
-              {b.room_name}
-            </div>
-            <div className="mt-1 text-sm text-slate-600">
-              Capacity {b.capacity}
-            </div>
-            <div className="mt-1 text-sm text-slate-600">
-              Location: {b.location || "-"}
+            <div className="text-sm text-slate-700">
+              <span className="font-medium">Date:</span>{" "}
+              {toSgDateInputValue(b.start_time)}
             </div>
             <div className="mt-2 text-sm text-slate-700">
-              <span className="font-medium">Time (SGT):</span>{" "}
-              {toSgDateInputValue(b.start_time)}{" "}
-              {minutesToLabel(toSgTimeMinutes(b.start_time))} -{" "}
+              <span className="font-medium">Time:</span>{" "}
+              {minutesToLabel(toSgTimeMinutes(b.start_time))} –{" "}
               {minutesToLabel(toSgTimeMinutes(b.end_time))}
             </div>
             <div className="mt-2 text-sm text-slate-700">
-              <span className="font-medium">Equipment:</span>{" "}
-              {Array.isArray(b.equipments) && b.equipments.length
-                ? b.equipments
-                    .map((e) => {
-                      const name =
-                        e.display_name || equipmentNameByCode[e.code] || e.code;
-                      return `${name} x${e.quantity}`;
-                    })
-                    .join(", ")
-                : "-"}
+              <span className="font-medium">Venue:</span>{" "}
+              <span className="font-semibold text-slate-900">
+                {b.room_name}
+              </span>
+            </div>
+            <div className="mt-2 text-sm text-slate-700">
+              <span className="font-medium">Location:</span> {b.location || "-"}
+            </div>
+            <div className="mt-1 text-sm text-slate-700">
+              <span className="font-medium">Capacity:</span> {b.capacity}
             </div>
 
             <div className="mt-4 flex flex-wrap gap-2">
@@ -294,6 +293,69 @@ const BookingsPage = () => {
           </div>
         ))}
       </div>
+
+      {showPast ? (
+        <div className="mt-10">
+          <h3 className="text-lg font-semibold tracking-tight text-slate-900">
+            Past Bookings
+          </h3>
+
+          {pastBookings.length === 0 ? (
+            <div className="mt-4 rounded-xl border border-slate-200 bg-white/80 p-4 text-sm text-slate-600 shadow-sm backdrop-blur">
+              No past bookings.
+            </div>
+          ) : (
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {pastBookings.map((b) => (
+                <div
+                  key={b.booking_id}
+                  className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur"
+                >
+                  <div className="text-sm text-slate-700">
+                    <span className="font-medium">Date:</span>{" "}
+                    {toSgDateInputValue(b.start_time)}
+                  </div>
+                  <div className="mt-2 text-sm text-slate-700">
+                    <span className="font-medium">Time:</span>{" "}
+                    {minutesToLabel(toSgTimeMinutes(b.start_time))} –{" "}
+                    {minutesToLabel(toSgTimeMinutes(b.end_time))}
+                  </div>
+                  <div className="mt-2 text-sm text-slate-700">
+                    <span className="font-medium">Venue:</span>{" "}
+                    <span className="font-semibold text-slate-900">
+                      {b.room_name}
+                    </span>
+                  </div>
+                  <div className="mt-2 text-sm text-slate-700">
+                    <span className="font-medium">Location:</span>{" "}
+                    {b.location || "-"}
+                  </div>
+                  <div className="mt-1 text-sm text-slate-700">
+                    <span className="font-medium">Capacity:</span> {b.capacity}
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => openEdit(b)}
+                      className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    >
+                      Update
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteBooking(b.booking_id)}
+                      className="inline-flex items-center justify-center rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : null}
 
       <dialog
         ref={editDialogRef}

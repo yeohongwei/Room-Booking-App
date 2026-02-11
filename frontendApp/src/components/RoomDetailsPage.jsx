@@ -45,6 +45,7 @@ const RoomDetailsPage = () => {
 
   const [room, setRoom] = useState(null);
   const [bookings, setBookings] = useState([]);
+  const [equipmentNameByCode, setEquipmentNameByCode] = useState({});
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -100,6 +101,21 @@ const RoomDetailsPage = () => {
       return;
     }
     setBookings(Array.isArray(bookingsRes.data) ? bookingsRes.data : []);
+
+    const eqRes = await fetchData(
+      "/equipments",
+      "GET",
+      null,
+      userCtx.accessToken,
+    );
+    if (eqRes.ok) {
+      const list = Array.isArray(eqRes.data) ? eqRes.data : [];
+      const map = {};
+      for (const eq of list) {
+        if (eq?.code) map[String(eq.code)] = eq.display_name || eq.code;
+      }
+      setEquipmentNameByCode(map);
+    }
 
     setLoading(false);
   };
@@ -213,22 +229,52 @@ const RoomDetailsPage = () => {
 
       {room ? (
         <div className="mt-4 rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur">
-          <div className="text-base font-semibold text-slate-900">
-            {room.name}
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-base font-semibold text-slate-900">
+                {room.name}
+              </div>
+              <div className="mt-1 text-sm text-slate-600">
+                Capacity: {room.capacity}
+              </div>
+              <div className="mt-1 text-sm text-slate-600">
+                Location: {room.location || "-"}
+              </div>
+            </div>
           </div>
-          <div className="mt-1 text-sm text-slate-600">
-            Capacity: {room.capacity}
-          </div>
-          <div className="mt-1 text-sm text-slate-600">
-            Location: {room.location || "-"}
-          </div>
-          <div className="mt-2 text-sm text-slate-700">
-            <span className="font-medium">Equipments:</span>{" "}
-            {Array.isArray(room.equipments) && room.equipments.length
-              ? room.equipments
-                  .map((e) => `${e.code} x${e.quantity}`)
-                  .join(", ")
-              : "-"}
+
+          <div className="mt-4">
+            {Array.isArray(room.equipments) && room.equipments.length ? (
+              <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                    <tr>
+                      <th className="px-3 py-2">Equipment</th>
+                      <th className="px-3 py-2 text-right">Qty</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {room.equipments.map((e) => {
+                      const name =
+                        e.display_name || equipmentNameByCode[e.code] || e.code;
+                      return (
+                        <tr key={e.code || name}>
+                          <td className="px-3 py-2 text-slate-700">{name}</td>
+                          <td className="px-3 py-2 text-right text-slate-700">
+                            {e.quantity}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-sm text-slate-600">
+                <span className="font-medium text-slate-700">Equipment</span>:
+                -
+              </div>
+            )}
           </div>
         </div>
       ) : null}
