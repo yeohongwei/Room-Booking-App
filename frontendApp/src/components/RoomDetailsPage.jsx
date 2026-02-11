@@ -271,8 +271,7 @@ const RoomDetailsPage = () => {
               </div>
             ) : (
               <div className="text-sm text-slate-600">
-                <span className="font-medium text-slate-700">Equipment</span>:
-                -
+                <span className="font-medium text-slate-700">Equipment</span>: -
               </div>
             )}
           </div>
