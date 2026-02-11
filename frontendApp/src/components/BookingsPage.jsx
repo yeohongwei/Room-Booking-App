@@ -59,6 +59,7 @@ const BookingsPage = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [equipmentNameByCode, setEquipmentNameByCode] = useState({});
 
   const [editing, setEditing] = useState(null); // booking row
   const [editDate, setEditDate] = useState("");
@@ -108,6 +109,27 @@ const BookingsPage = () => {
     loadBookings();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userCtx.userId]);
+
+  useEffect(() => {
+    const loadEquipmentNames = async () => {
+      const res = await fetchData(
+        "/equipments",
+        "GET",
+        null,
+        userCtx.accessToken,
+      );
+      if (!res.ok) return;
+      const list = Array.isArray(res.data) ? res.data : [];
+      const map = {};
+      for (const eq of list) {
+        if (eq?.code) map[String(eq.code)] = eq.display_name || eq.code;
+      }
+      setEquipmentNameByCode(map);
+    };
+
+    loadEquipmentNames();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const dialog = editDialogRef.current;
@@ -241,9 +263,15 @@ const BookingsPage = () => {
               {minutesToLabel(toSgTimeMinutes(b.end_time))}
             </div>
             <div className="mt-2 text-sm text-slate-700">
-              <span className="font-medium">Equipments:</span>{" "}
+              <span className="font-medium">Equipment:</span>{" "}
               {Array.isArray(b.equipments) && b.equipments.length
-                ? b.equipments.map((e) => `${e.code} x${e.quantity}`).join(", ")
+                ? b.equipments
+                    .map((e) => {
+                      const name =
+                        e.display_name || equipmentNameByCode[e.code] || e.code;
+                      return `${name} x${e.quantity}`;
+                    })
+                    .join(", ")
                 : "-"}
             </div>
 

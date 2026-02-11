@@ -9,7 +9,7 @@ const NewRoomPage = () => {
   const isAdmin = String(userCtx.role || "").toUpperCase() === "ADMIN";
 
   const [name, setName] = useState("");
-  const [capacity, setCapacity] = useState(4);
+  const [capacity, setCapacity] = useState("");
   const [location, setLocation] = useState("");
   const [statusMsg, setStatusMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");

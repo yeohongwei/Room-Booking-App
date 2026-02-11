@@ -14,6 +14,8 @@ const RoomAndEquipmentPage = () => {
   const [errorMsg, setErrorMsg] = useState("");
   const [statusMsg, setStatusMsg] = useState("");
 
+  const [qtyByEquipmentId, setQtyByEquipmentId] = useState({});
+
   const [editName, setEditName] = useState("");
   const [editCapacity, setEditCapacity] = useState(1);
   const [editLocation, setEditLocation] = useState("");
@@ -55,6 +57,15 @@ const RoomAndEquipmentPage = () => {
     setEditName(roomRes.data?.name || "");
     setEditCapacity(roomRes.data?.capacity || 1);
     setEditLocation(roomRes.data?.location || "");
+
+    const nextQty = {};
+    const roomEq = Array.isArray(roomRes.data?.equipments)
+      ? roomRes.data.equipments
+      : [];
+    for (const eq of roomEq) {
+      if (eq && (eq.id || eq.id === 0)) nextQty[String(eq.id)] = eq.quantity;
+    }
+    setQtyByEquipmentId(nextQty);
 
     const eqRes = await fetchData(
       "/equipments",
@@ -250,7 +261,11 @@ const RoomAndEquipmentPage = () => {
                   className="rounded-lg border border-slate-200 bg-white p-3"
                 >
                   <div className="text-sm font-semibold text-slate-900">
-                    {e.code}
+                    {e.display_name ||
+                      allEquipments.find((x) => String(x.id) === String(e.id))
+                        ?.display_name ||
+                      e.code ||
+                      "-"}
                   </div>
 
                   <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -259,16 +274,35 @@ const RoomAndEquipmentPage = () => {
                       <input
                         type="number"
                         min={1}
-                        defaultValue={e.quantity}
-                        onBlur={(ev) => {
-                          const q = Number(ev.target.value);
-                          if (Number.isFinite(q) && q > 0) {
-                            upsertEquipment(e.id, q);
-                          }
+                        value={
+                          qtyByEquipmentId[String(e.id)] ?? String(e.quantity)
+                        }
+                        onChange={(ev) => {
+                          setQtyByEquipmentId((prev) => ({
+                            ...prev,
+                            [String(e.id)]: ev.target.value,
+                          }));
                         }}
                         className="w-24 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       />
                     </label>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const raw = qtyByEquipmentId[String(e.id)];
+                        const q = Number(raw);
+                        if (!Number.isFinite(q) || q <= 0) {
+                          setErrorMsg("Quantity must be a positive number");
+                          setStatusMsg("");
+                          return;
+                        }
+                        upsertEquipment(e.id, q);
+                      }}
+                      className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    >
+                      Update
+                    </button>
 
                     <button
                       type="button"
@@ -303,7 +337,7 @@ const RoomAndEquipmentPage = () => {
               >
                 {allEquipments.map((e) => (
                   <option key={e.id} value={String(e.id)}>
-                    {e.code} - {e.display_name}
+                    {e.display_name}
                   </option>
                 ))}
               </select>

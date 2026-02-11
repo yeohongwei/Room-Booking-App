@@ -3,8 +3,6 @@ import { Navigate } from "react-router";
 import UserContext from "../context/user";
 import sharedFetch from "../shared/sharedFetch";
 
-const CODE_OPTIONS = ["projector", "whiteboard", "video conferencing"];
-
 const EquipmentPage = () => {
   const userCtx = useContext(UserContext);
   const isAdmin = String(userCtx.role || "").toUpperCase() === "ADMIN";
@@ -18,16 +16,17 @@ const EquipmentPage = () => {
   const [errorMsg, setErrorMsg] = useState("");
 
   const [editing, setEditing] = useState(null);
-  const [editCode, setEditCode] = useState(CODE_OPTIONS[0]);
+  const [editCode, setEditCode] = useState("");
   const [editDisplayName, setEditDisplayName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editMsg, setEditMsg] = useState("");
   const [editIsError, setEditIsError] = useState(false);
 
-  const [newCode, setNewCode] = useState(CODE_OPTIONS[0]);
+  const [newCode, setNewCode] = useState("");
   const [newDisplayName, setNewDisplayName] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newMsg, setNewMsg] = useState("");
+  const [newIsError, setNewIsError] = useState(false);
 
   const fetchData = useMemo(
     () =>
@@ -85,7 +84,7 @@ const EquipmentPage = () => {
 
   const openEdit = (e) => {
     setEditing(e);
-    setEditCode(e.code || CODE_OPTIONS[0]);
+    setEditCode(e.code || "");
     setEditDisplayName(e.display_name || "");
     setEditDescription(e.description || "");
     setEditMsg("");
@@ -143,12 +142,20 @@ const EquipmentPage = () => {
   const addEquipment = async (e) => {
     e.preventDefault();
     setNewMsg("");
+    setNewIsError(false);
+
+    const code = String(newCode || "").trim();
+    if (!code) {
+      setNewMsg("Code is required");
+      setNewIsError(true);
+      return;
+    }
 
     const res = await fetchData(
       "/equipments",
       "PUT",
       {
-        code: newCode,
+        code,
         display_name: newDisplayName,
         description: newDescription,
       },
@@ -157,10 +164,13 @@ const EquipmentPage = () => {
 
     if (!res.ok) {
       setNewMsg(res.msg || "Add failed");
+      setNewIsError(true);
       return;
     }
 
     setNewMsg("Equipment added");
+    setNewIsError(false);
+    setNewCode("");
     setNewDisplayName("");
     setNewDescription("");
     await load();
@@ -226,17 +236,13 @@ const EquipmentPage = () => {
         <form onSubmit={addEquipment} className="mt-4 grid gap-4">
           <label className={`${formRowClass} text-sm text-slate-700`}>
             <span className="font-medium">Code</span>
-            <select
+            <input
               value={newCode}
               onChange={(e) => setNewCode(e.target.value)}
+              required
               className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              {CODE_OPTIONS.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+              placeholder="e.g. WHITEBOARD"
+            />
           </label>
 
           <label className={`${formRowClass} text-sm text-slate-700`}>
@@ -266,7 +272,13 @@ const EquipmentPage = () => {
             Add
           </button>
           {newMsg ? (
-            <div className="text-sm text-slate-700">{newMsg}</div>
+            <div
+              className={
+                newIsError ? "text-sm text-red-600" : "text-sm text-emerald-700"
+              }
+            >
+              {newMsg}
+            </div>
           ) : null}
         </form>
       </div>
@@ -285,17 +297,12 @@ const EquipmentPage = () => {
             <div className="mt-4 grid gap-4">
               <label className={`${formRowClass} text-sm text-slate-700`}>
                 <span className="font-medium">Code</span>
-                <select
+                <input
                   value={editCode}
                   onChange={(e) => setEditCode(e.target.value)}
+                  required
                   className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  {CODE_OPTIONS.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
+                />
               </label>
 
               <label className={`${formRowClass} text-sm text-slate-700`}>

@@ -10,6 +10,7 @@ const RoomsPage = () => {
   const isAdmin = String(userCtx.role || "").toUpperCase() === "ADMIN";
 
   const [rooms, setRooms] = useState([]);
+  const [equipmentNameByCode, setEquipmentNameByCode] = useState({});
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [capacityFilter, setCapacityFilter] = useState("ALL");
@@ -46,6 +47,23 @@ const RoomsPage = () => {
 
   useEffect(() => {
     loadRooms();
+
+    const loadEquipmentNames = async () => {
+      const res = await fetchData(
+        "/equipments",
+        "GET",
+        null,
+        userCtx.accessToken,
+      );
+      if (!res.ok) return;
+      const list = Array.isArray(res.data) ? res.data : [];
+      const map = {};
+      for (const eq of list) {
+        if (eq?.code) map[String(eq.code)] = eq.display_name || eq.code;
+      }
+      setEquipmentNameByCode(map);
+    };
+    loadEquipmentNames();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -122,9 +140,15 @@ const RoomsPage = () => {
             </div>
 
             <div className="mt-3 text-sm text-slate-700">
-              <span className="font-medium">Equipments:</span>{" "}
+              <span className="font-medium">Equipment:</span>{" "}
               {Array.isArray(r.equipments) && r.equipments.length
-                ? r.equipments.map((e) => `${e.code} x${e.quantity}`).join(", ")
+                ? r.equipments
+                    .map((e) => {
+                      const name =
+                        e.display_name || equipmentNameByCode[e.code] || e.code;
+                      return `${name} x${e.quantity}`;
+                    })
+                    .join(", ")
                 : "-"}
             </div>
 
