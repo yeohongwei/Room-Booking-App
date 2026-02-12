@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router";
 import UserContext from "../context/user";
 import sharedFetch from "../shared/sharedFetch";
+import Room from "./Room";
 
 const pad2 = (n) => String(n).padStart(2, "0");
 const minutesToLabel = (mins) =>
@@ -228,53 +229,8 @@ const RoomDetailsPage = () => {
       ) : null}
 
       {room ? (
-        <div className="mt-4 rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="text-base font-semibold text-slate-900">
-                {room.name}
-              </div>
-              <div className="mt-1 text-sm text-slate-600">
-                Capacity: {room.capacity}
-              </div>
-              <div className="mt-1 text-sm text-slate-600">
-                Location: {room.location || "-"}
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4">
-            {Array.isArray(room.equipments) && room.equipments.length ? (
-              <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-600">
-                    <tr>
-                      <th className="px-3 py-2">Equipment</th>
-                      <th className="px-3 py-2 text-right">Qty</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {room.equipments.map((e) => {
-                      const name =
-                        e.display_name || equipmentNameByCode[e.code] || e.code;
-                      return (
-                        <tr key={e.code || name}>
-                          <td className="px-3 py-2 text-slate-700">{name}</td>
-                          <td className="px-3 py-2 text-right text-slate-700">
-                            {e.quantity}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="text-sm text-slate-600">
-                <span className="font-medium text-slate-700">Equipment</span>: -
-              </div>
-            )}
-          </div>
+        <div className="mt-4">
+          <Room room={room} equipmentNameByCode={equipmentNameByCode} />
         </div>
       ) : null}
 

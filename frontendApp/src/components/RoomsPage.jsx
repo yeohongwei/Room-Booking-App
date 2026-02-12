@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import sharedFetch from "../shared/sharedFetch";
 import UserContext from "../context/user";
+import Room from "./Room";
 
 const RoomsPage = () => {
   const userCtx = useContext(UserContext);
@@ -162,95 +163,43 @@ const RoomsPage = () => {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {filteredRooms.map((r) => (
-          <div
+          <Room
             key={r.id}
-            className="flex h-full flex-col rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur"
-          >
-            <div className="flex-1">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-base font-semibold text-slate-900">
-                    {r.name}
-                  </div>
-                  <div className="mt-1 text-sm text-slate-600">
-                    Capacity: {r.capacity}
-                  </div>
-                  <div className="mt-1 text-sm text-slate-600">
-                    Location: {r.location || "-"}
-                  </div>
-                </div>
+            room={r}
+            equipmentNameByCode={equipmentNameByCode}
+            actions={
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/rooms/${r.id}`)}
+                  className="inline-flex items-center justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                >
+                  View Availability
+                </button>
+
+                {isAdmin ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/roomequipment/${r.id}`)}
+                      className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    >
+                      Update Room & equipment
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setDeleteTarget({ id: r.id, name: r.name })
+                      }
+                      className="inline-flex items-center justify-center rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
+                    >
+                      Delete room
+                    </button>
+                  </>
+                ) : null}
               </div>
-
-              <div className="mt-4">
-                {Array.isArray(r.equipments) && r.equipments.length ? (
-                  <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-                    <table className="w-full text-left text-sm">
-                      <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-600">
-                        <tr>
-                          <th className="px-3 py-2">Equipment</th>
-                          <th className="px-3 py-2 text-right">Qty</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200">
-                        {r.equipments.map((e) => {
-                          const name =
-                            e.display_name ||
-                            equipmentNameByCode[e.code] ||
-                            e.code;
-                          return (
-                            <tr key={e.code || name}>
-                              <td className="px-3 py-2 text-slate-700">
-                                {name}
-                              </td>
-                              <td className="px-3 py-2 text-right text-slate-700">
-                                {e.quantity}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="text-sm text-slate-600">
-                    <span className="font-medium text-slate-700">
-                      Equipment
-                    </span>
-                    : -
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-auto pt-4 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => navigate(`/rooms/${r.id}`)}
-                className="inline-flex items-center justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-              >
-                View Availability
-              </button>
-
-              {isAdmin ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => navigate(`/roomequipment/${r.id}`)}
-                    className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                  >
-                    Update Room & equipment
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDeleteTarget({ id: r.id, name: r.name })}
-                    className="inline-flex items-center justify-center rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
-                  >
-                    Delete room
-                  </button>
-                </>
-              ) : null}
-            </div>
-          </div>
+            }
+          />
         ))}
       </div>
 

@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import UserContext from "../context/user";
 import sharedFetch from "../shared/sharedFetch";
+import Booking from "./Booking";
 
 const pad2 = (n) => String(n).padStart(2, "0");
 
@@ -248,49 +249,15 @@ const BookingsPage = () => {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {upcomingBookings.map((b) => (
-          <div
+          <Booking
             key={b.booking_id}
-            className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur"
-          >
-            <div className="text-sm text-slate-700">
-              <span className="font-medium">Date:</span>{" "}
-              {toSgDateInputValue(b.start_time)}
-            </div>
-            <div className="mt-2 text-sm text-slate-700">
-              <span className="font-medium">Time:</span>{" "}
-              {minutesToLabel(toSgTimeMinutes(b.start_time))} –{" "}
-              {minutesToLabel(toSgTimeMinutes(b.end_time))}
-            </div>
-            <div className="mt-2 text-sm text-slate-700">
-              <span className="font-medium">Venue:</span>{" "}
-              <span className="font-semibold text-slate-900">
-                {b.room_name}
-              </span>
-            </div>
-            <div className="mt-2 text-sm text-slate-700">
-              <span className="font-medium">Location:</span> {b.location || "-"}
-            </div>
-            <div className="mt-1 text-sm text-slate-700">
-              <span className="font-medium">Capacity:</span> {b.capacity}
-            </div>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => openEdit(b)}
-                className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-              >
-                Update
-              </button>
-              <button
-                type="button"
-                onClick={() => deleteBooking(b.booking_id)}
-                className="inline-flex items-center justify-center rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
+            booking={b}
+            dateLabel={toSgDateInputValue(b.start_time)}
+            startLabel={minutesToLabel(toSgTimeMinutes(b.start_time))}
+            endLabel={minutesToLabel(toSgTimeMinutes(b.end_time))}
+            onUpdate={() => openEdit(b)}
+            onDelete={() => deleteBooking(b.booking_id)}
+          />
         ))}
       </div>
 
@@ -307,50 +274,15 @@ const BookingsPage = () => {
           ) : (
             <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {pastBookings.map((b) => (
-                <div
+                <Booking
                   key={b.booking_id}
-                  className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur"
-                >
-                  <div className="text-sm text-slate-700">
-                    <span className="font-medium">Date:</span>{" "}
-                    {toSgDateInputValue(b.start_time)}
-                  </div>
-                  <div className="mt-2 text-sm text-slate-700">
-                    <span className="font-medium">Time:</span>{" "}
-                    {minutesToLabel(toSgTimeMinutes(b.start_time))} –{" "}
-                    {minutesToLabel(toSgTimeMinutes(b.end_time))}
-                  </div>
-                  <div className="mt-2 text-sm text-slate-700">
-                    <span className="font-medium">Venue:</span>{" "}
-                    <span className="font-semibold text-slate-900">
-                      {b.room_name}
-                    </span>
-                  </div>
-                  <div className="mt-2 text-sm text-slate-700">
-                    <span className="font-medium">Location:</span>{" "}
-                    {b.location || "-"}
-                  </div>
-                  <div className="mt-1 text-sm text-slate-700">
-                    <span className="font-medium">Capacity:</span> {b.capacity}
-                  </div>
-
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => openEdit(b)}
-                      className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                    >
-                      Update
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => deleteBooking(b.booking_id)}
-                      className="inline-flex items-center justify-center rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
+                  booking={b}
+                  dateLabel={toSgDateInputValue(b.start_time)}
+                  startLabel={minutesToLabel(toSgTimeMinutes(b.start_time))}
+                  endLabel={minutesToLabel(toSgTimeMinutes(b.end_time))}
+                  onUpdate={() => openEdit(b)}
+                  onDelete={() => deleteBooking(b.booking_id)}
+                />
               ))}
             </div>
           )}
