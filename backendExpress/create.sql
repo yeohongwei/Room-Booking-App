@@ -3,7 +3,6 @@ CREATE TABLE role (
 );
 
 
-
 INSERT INTO role VALUES ('USER'),('ADMIN');
 
 CREATE TABLE users (
@@ -14,9 +13,6 @@ CREATE TABLE users (
     role VARCHAR(20) DEFAULT 'USER',
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
--- ALTER TABLE users
--- ALTER COLUMN role DROP NOT NULL;
 
 
 CREATE TABLE rooms (
@@ -54,6 +50,3 @@ CREATE TABLE rooms (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CHECK (start_time < end_time)
 );
-
-DROP TABLE bookings;
-DROP TABLE room_equipments;
