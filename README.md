@@ -72,8 +72,6 @@ VITE_SERVER=http://localhost:5003
   - In psql: `CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`
 - Run the schema SQL in `backendExpress/create.sql`.
 
-Note: `backendExpress/create.sql` currently contains `DROP TABLE` statements at the bottom. If you run the file top-to-bottom, those lines will drop tables; remove or skip them for initial setup.
-
 ### 2) ▶️ Start the backend
 
 ```bash
